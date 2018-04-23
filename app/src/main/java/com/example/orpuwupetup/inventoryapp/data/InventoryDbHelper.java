@@ -25,13 +25,13 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
 
         // create String that contains SQL statement to create new data base
-        String SQL_CREATE_INVENTORY_TABLE = "CREATE TABLE" + InventoryEntry.TABLE_NAME + " ("
-                + InventoryEntry._ID + "INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + InventoryEntry.COLUMN_PRODUCT_NAME + "TEXT NOT NULL UNIQUE, " // this one is UNIQUE because I want only one entry of specific product in my database, just change it quantity to higher if I find more pieces of it
-                + InventoryEntry.COLUMN_PRODUCT_PRICE + "INTEGER NOT NULL, "
-                + InventoryEntry.COLUMN_PRODUCT_QUANTITY + "INTEGER NOT NULL DEFAULT 0, "
-                + InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME + "TEXT NOT NULL, "
-                + InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER + "TEXT);"; // this one can be stored as TEXT because we don't need to use it as a value (for equations for example)
+        String SQL_CREATE_INVENTORY_TABLE = "CREATE TABLE " + InventoryEntry.TABLE_NAME + " ("
+                + InventoryEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + InventoryEntry.COLUMN_PRODUCT_NAME + " TEXT NOT NULL UNIQUE, " // this one is UNIQUE because I want only one entry of specific product in my database, just change it quantity to higher if I find more pieces of it
+                + InventoryEntry.COLUMN_PRODUCT_PRICE + " INTEGER NOT NULL, "
+                + InventoryEntry.COLUMN_PRODUCT_QUANTITY + " INTEGER NOT NULL DEFAULT 0, "
+                + InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME + " TEXT NOT NULL, "
+                + InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER + " TEXT);"; // this one can be stored as TEXT because we don't need to use it as a value (for equations for example)
 
         // execute SQL statement
         db.execSQL(SQL_CREATE_INVENTORY_TABLE);
@@ -39,6 +39,11 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // unfortunately I don't know what to do here YET...
+        /*
+        This method implementation is not mandatory, and I don't know exactly what to do here
+        so I'll just leave it with empty body. Can you give me some tips? If I change something in my table,
+        do I have to drop former one here, and create new one with correct values or number of columns?
+        or something entirely different? If you'll be so kind, please help me with this task.; )
+        */
     }
 }
