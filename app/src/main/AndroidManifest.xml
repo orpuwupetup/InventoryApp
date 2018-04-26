@@ -16,6 +16,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name=".data.ProductProvider"
+            android:authorities="com.example.orpuwupetup.inventoryapp"
+            android:exported="false" />
     </application>
 
 </manifest>
