@@ -143,6 +143,8 @@ public class ProductProvider extends ContentProvider{
         // open database in read mode to get old quantity value
         SQLiteDatabase readDb = dbHelper.getReadableDatabase();
 
+        // TODO: Add validation to the data that user wants to put in the data base
+
         // Insert a new row for product in the database, returning the ID of that new row.
         long newRowId = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);
 
@@ -264,6 +266,43 @@ public class ProductProvider extends ContentProvider{
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        final int match = sUriMatcher.match(uri);
+
+        switch (match) {
+            case ALL_PRODUCTS:
+                return updateProduct(uri, values, selection, selectionArgs);
+            case PRODUCT_ID:
+
+                // For the PRODUCT_ID code, extract out the ID from the URI,
+                // so we know which row to update. Selection will be "_id=?" and selection
+                // arguments will be a String array containing the actual ID.
+                selection = InventoryEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+                int updatedRows = updateProduct(uri, values, selection, selectionArgs);
+
+                if(updatedRows != 0) {
+
+                    //notify all listeners that the data in this URI has changed
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return updatedRows;
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
+    }
+
+    private int updateProduct (Uri uri, ContentValues values, String selection, String[] selectionArgs){
+
+        // TODO: Add product update validation methods (if there are any empty values or something like that
+        /*
+        If there are no values to update, then don't try to update the database, otherwise update
+        the database with new info
+        */
+        if (values.size() == 0) {
+            return 0;
+        }
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        return db.update(InventoryEntry.TABLE_NAME, values, selection, selectionArgs);
     }
 }
