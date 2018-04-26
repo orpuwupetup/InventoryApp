@@ -136,14 +136,7 @@ public class ProductProvider extends ContentProvider{
         so each time we want to put new entry in database we have to check if it is already present
         and if so, just change it quantity to higher, and only if its not, add it as a new row
         */
-/**
-values.put(InventoryEntry.COLUMN_PRODUCT_NAME, "Foo");
-values.put(InventoryEntry.COLUMN_PRODUCT_PRICE, 235);
-values.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, 10);
-values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME, "Bar");
-values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER, "000-111-222");
-Gets the database in write mode
-*/
+
         // open database in write mode to put in new product
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -201,7 +194,7 @@ Gets the database in write mode
                 ContentValues updatedQuantity = new ContentValues();
                 updatedQuantity.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, newQuantity);
 
-                /** update table with new value of quantity of the product */
+                /* update table with new value of quantity of the product */
                 db.update(InventoryEntry.TABLE_NAME, updatedQuantity, InventoryEntry.COLUMN_PRODUCT_NAME + "=?", whereClause);
 
                 // close cursor and tell user quantity of what was updated and by how much
@@ -228,12 +221,45 @@ Gets the database in write mode
         db.close();
 
         return ContentUris.withAppendedId(uri, newRowId);
-
     }
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        final int match = sUriMatcher.match(uri);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int rowsDeleted;
+        switch (match) {
+            case ALL_PRODUCTS:
+
+                // delete from data base
+                rowsDeleted = db.delete(InventoryEntry.TABLE_NAME, selection, selectionArgs);
+                if(rowsDeleted != 0){
+
+                    //notify all listeners that the data in this URI has changed
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return rowsDeleted;
+            case PRODUCT_ID:
+
+                /*
+                For the PRODUCT_ID code, extract out the ID from the URI,
+                so we know which row to update. Selection will be "_id=?" and selection
+                arguments will be a String array containing the actual ID.
+                */
+                selection = InventoryEntry._ID + "=?";
+                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
+
+                // delete from data base and check if any row was deleted
+                rowsDeleted = db.delete(InventoryEntry.TABLE_NAME, selection, selectionArgs);
+                if(rowsDeleted != 0){
+
+                    //notify all listeners that the data in this URI has changed
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return rowsDeleted;
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
     }
 
     @Override

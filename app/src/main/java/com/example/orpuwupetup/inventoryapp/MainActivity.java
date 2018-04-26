@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,19 @@ public class MainActivity extends AppCompatActivity {
 
         insertData();
         getData();
+
+        Button deletThis = findViewById(R.id.delet_this);
+        deletThis.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteThis();
+            }
+        });
+    }
+
+    private void deleteThis(){
+        getContentResolver().delete(InventoryEntry.CONTENT_URI, null, null);
+        this.recreate();
     }
 
     public void insertData() {
@@ -46,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         so each time we want to put new entry in database we have to check if it is already present
         and if so, just change it quantity to higher, and only if its not, add it as a new row
         */
-        values.put(InventoryEntry.COLUMN_PRODUCT_NAME, "sony");
+        values.put(InventoryEntry.COLUMN_PRODUCT_NAME, "philips");
         values.put(InventoryEntry.COLUMN_PRODUCT_PRICE, 235);
         values.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, 69);
         values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME, "Bar");
@@ -72,14 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 InventoryEntry.COLUMN_PRODUCT_QUANTITY};
 
         // Perform a query on the inventory table
-        Cursor cursor = db.query(
-                InventoryEntry.TABLE_NAME,   // The table to query
-                projection,            // The columns to return
-                null,                  // The columns for the WHERE clause
-                null,                  // The values for the WHERE clause
-                null,                  // Don't group the rows
-                null,                  // Don't filter by row groups
-                null);                   // The sort order
+        Cursor cursor = getContentResolver().query(InventoryEntry.CONTENT_URI, projection, null, null, null);
 
         // Figure out the index of each column
         int idColumnIndex = cursor.getColumnIndex(InventoryEntry._ID);
