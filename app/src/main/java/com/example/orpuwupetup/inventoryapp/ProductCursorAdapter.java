@@ -1,7 +1,9 @@
 package com.example.orpuwupetup.inventoryapp;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntry;
 
 /**
@@ -29,7 +33,7 @@ public class ProductCursorAdapter extends CursorAdapter {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(View view, final Context context, final Cursor cursor) {
 
         // get views of the product item
         TextView productName = view.findViewById(R.id.product_name);
@@ -49,7 +53,36 @@ public class ProductCursorAdapter extends CursorAdapter {
         saleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("list item", "update quantity of products");
+
+                /*
+                check quantity of the product that we have in inventory, if it's bigger than zero,
+                decrement it by one, if nothings left, tell about it to the user
+                */
+                    // get current quantity of the product
+                String[] projection = {InventoryEntry.COLUMN_PRODUCT_QUANTITY};
+                String[] selectionArgs = {nameString};
+                Cursor cursor1 = context.getContentResolver().query(
+                        Uri.withAppendedPath(InventoryEntry.CONTENT_URI, cursor.getString(cursor.getColumnIndex(InventoryEntry._ID))),
+                        projection,
+                        InventoryEntry.COLUMN_PRODUCT_NAME+"=?",
+                        selectionArgs,
+                        null);
+                cursor1.moveToFirst();
+                int quantity = cursor1.getInt(cursor1.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_QUANTITY));
+
+                    // if bigger than 1 'sell' one product (decrement quantity by 1)
+                if ( quantity >= 1){
+                    ContentValues values1 = new ContentValues();
+                    values1.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, quantity-1);
+                    context.getContentResolver().update(Uri.withAppendedPath(InventoryEntry.CONTENT_URI, cursor.getString(cursor.getColumnIndex(InventoryEntry._ID))),
+                            values1,
+                            InventoryEntry.COLUMN_PRODUCT_NAME+"=?",
+                            selectionArgs);
+
+                    // else, notify the user with toast message
+                }else{
+                    Toast.makeText(context, "Nothing left, can't sell more", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

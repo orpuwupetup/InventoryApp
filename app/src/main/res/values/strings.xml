@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Inventory App</string>
     <string name="inventory">Inventory:</string>
+    <string name="product_name">Product Name</string>
+    <string name="product_price">0.00 $</string>
+    <string name="quantity">Quantity:</string>
+    <string name="price">Price:</string>
+    <string name="_0_pcs">0 pcs</string>
+    <string name="description_hint">Click to add description...</string>
 </resources>
