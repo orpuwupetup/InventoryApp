@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -55,9 +57,30 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         getLoaderManager().initLoader(1, null, this);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        /*
+        Inflate the menu options from the res/menu/menu_inventory_list.xml file.
+        This adds menu items to the app bar.
+        */
+        getMenuInflater().inflate(R.menu.menu_inventoy_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // User clicked on a menu option in the app bar overflow menu
+        switch (item.getItemId()) {
+            // Respond to a click on the "Delete all products" menu option
+            case R.id.action_delete_all_entries:
+                deleteThis();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void deleteThis(){
         getContentResolver().delete(InventoryEntry.CONTENT_URI, null, null);
-        this.recreate();
     }
 
     @Override
