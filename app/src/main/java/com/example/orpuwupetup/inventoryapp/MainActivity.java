@@ -3,11 +3,13 @@ package com.example.orpuwupetup.inventoryapp;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -35,6 +37,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // find list view for displaying products
         productsList = findViewById(R.id.list);
 
+        //Find floating action button, and set intent on it to open AddProduct Activity
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent openAddProduct = new Intent(MainActivity.this, AddProduct.class);
+                startActivity(openAddProduct);
+            }
+        });
+
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_PRODUCT_NAME, "costam");
         values.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, 30);
@@ -42,15 +54,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME, "sony");
 
         getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
-
-
-        Button deletThis = findViewById(R.id.delet_this);
-        deletThis.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteThis();
-            }
-        });
 
         adapter = new ProductCursorAdapter(this, null);
         productsList.setAdapter(adapter);
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             // Respond to a click on the "Delete all products" menu option
             case R.id.action_delete_all_entries:
                 deleteThis();
+                Toast.makeText(this, "All products deleted from the list", Toast.LENGTH_SHORT).show();
                 return true;
         }
         return super.onOptionsItemSelected(item);

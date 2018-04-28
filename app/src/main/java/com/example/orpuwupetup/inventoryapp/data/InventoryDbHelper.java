@@ -24,6 +24,8 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
+        // TODO: do something to keep price as integer (number of cents, not dollars)
+        // TODO: Add description TEXT column and ImageUri TEXT column
         // create String that contains SQL statement to create new data base
         String SQL_CREATE_INVENTORY_TABLE = "CREATE TABLE " + InventoryEntry.TABLE_NAME + " ("
                 + InventoryEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "

@@ -22,7 +22,11 @@
             android:authorities="com.example.orpuwupetup.inventoryapp"
             android:exported="false" />
 
-        <activity android:name=".AddProduct"></activity>
+        <activity android:name=".AddProduct">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
     </application>
 
 </manifest>

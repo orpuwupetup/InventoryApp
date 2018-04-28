@@ -49,6 +49,9 @@ public class ProductCursorAdapter extends CursorAdapter {
         productQuantity.setText(quantityString);
         productPrice.setText(priceString);
 
+        final String[] selectionArgs = {nameString};
+        final String idString = cursor.getString(cursor.getColumnIndex(InventoryEntry._ID));
+
         // set on click listener on saleButton to decrement quantity of product by one
         saleButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,9 +63,9 @@ public class ProductCursorAdapter extends CursorAdapter {
                 */
                     // get current quantity of the product
                 String[] projection = {InventoryEntry.COLUMN_PRODUCT_QUANTITY};
-                String[] selectionArgs = {nameString};
+
                 Cursor cursor1 = context.getContentResolver().query(
-                        Uri.withAppendedPath(InventoryEntry.CONTENT_URI, cursor.getString(cursor.getColumnIndex(InventoryEntry._ID))),
+                        Uri.withAppendedPath(InventoryEntry.CONTENT_URI, idString),
                         projection,
                         InventoryEntry.COLUMN_PRODUCT_NAME+"=?",
                         selectionArgs,
@@ -74,7 +77,7 @@ public class ProductCursorAdapter extends CursorAdapter {
                 if ( quantity >= 1){
                     ContentValues values1 = new ContentValues();
                     values1.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, quantity-1);
-                    context.getContentResolver().update(Uri.withAppendedPath(InventoryEntry.CONTENT_URI, cursor.getString(cursor.getColumnIndex(InventoryEntry._ID))),
+                    context.getContentResolver().update(Uri.withAppendedPath(InventoryEntry.CONTENT_URI, idString),
                             values1,
                             InventoryEntry.COLUMN_PRODUCT_NAME+"=?",
                             selectionArgs);

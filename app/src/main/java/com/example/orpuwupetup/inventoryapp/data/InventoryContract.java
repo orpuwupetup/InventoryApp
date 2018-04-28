@@ -41,6 +41,7 @@ public final class InventoryContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_INVENTORY;
 
     // used in app constants associated with the inventory table
+        // TODO: Add description and imageUriString columns to the table
         public final static String TABLE_NAME = "inventory";
 
         public final static String _ID = BaseColumns._ID;
