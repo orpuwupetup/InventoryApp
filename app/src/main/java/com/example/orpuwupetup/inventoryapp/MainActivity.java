@@ -9,12 +9,14 @@ import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -47,17 +49,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        ContentValues values = new ContentValues();
-        values.put(InventoryEntry.COLUMN_PRODUCT_NAME, "costam");
-        values.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, 30);
-        values.put(InventoryEntry.COLUMN_PRODUCT_PRICE, 430);
-        values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME, "sony");
-
-        getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
-
         adapter = new ProductCursorAdapter(this, null);
         productsList.setAdapter(adapter);
         getLoaderManager().initLoader(1, null, this);
+
+        productsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                // create URI for clicked pet
+                Uri productUri = Uri.withAppendedPath(InventoryEntry.CONTENT_URI, String.valueOf(id));
+
+                Intent openDetails = new Intent(MainActivity.this, ProductDetailsActivity.class);
+                openDetails.putExtra("product_uri", productUri.toString());
+                startActivity(openDetails);
+            }
+        });
+
     }
 
     @Override

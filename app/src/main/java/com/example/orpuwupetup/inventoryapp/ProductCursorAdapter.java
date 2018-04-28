@@ -43,8 +43,8 @@ public class ProductCursorAdapter extends CursorAdapter {
 
         // set text of the views to correct depiction of the product
         final String nameString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_NAME));
-        final String quantityString = String.valueOf(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_QUANTITY)));
-        final String priceString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_PRICE));
+        final String quantityString = String.valueOf(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_QUANTITY))) + " pcs";
+        final String priceString = String.valueOf(0.01 * cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_PRICE))) + " $";
         productName.setText(nameString);
         productQuantity.setText(quantityString);
         productPrice.setText(priceString);

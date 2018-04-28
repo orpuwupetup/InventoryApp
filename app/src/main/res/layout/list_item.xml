@@ -50,6 +50,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        android:focusable="false"
         android:text="SELL"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginRight="16dp"
