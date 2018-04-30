@@ -208,5 +208,27 @@
         android:layout_marginBottom="50dp"
         />
 
+    <ImageButton
+        android:id="@+id/decrement_quantity"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:scaleType="center"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        tools:src="@drawable/ic_launcher_background"
+        app:layout_constraintTop_toTopOf="@id/product_quantity"
+        app:layout_constraintBottom_toBottomOf="@id/product_quantity"
+        app:layout_constraintEnd_toStartOf="@id/product_quantity"/>
+    <ImageButton
+        android:id="@+id/increment_quantity"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        tools:src="@drawable/ic_launcher_background"
+        app:layout_constraintTop_toTopOf="@id/product_quantity"
+        app:layout_constraintBottom_toBottomOf="@id/product_quantity"
+        app:layout_constraintStart_toEndOf="@id/product_quantity"/>
+
 
 </android.support.constraint.ConstraintLayout>
