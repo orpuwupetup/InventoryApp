@@ -208,13 +208,37 @@
         android:layout_marginBottom="50dp"
         />
 
+    <!-- TODO: Add icons to the buttons -->
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/edit_product_fab"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="105dp"
+        android:layout_marginEnd="20dp"
+        android:visibility="gone"
+        android:layout_marginRight="20dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/delete_product_fab"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
+        android:src="@drawable/ic_launcher_background"
+        android:layout_marginBottom="45dp"
+        android:layout_marginEnd="85dp"
+        android:layout_marginRight="35dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp" />
+
     <ImageButton
         android:id="@+id/decrement_quantity"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:scaleType="center"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
         tools:src="@drawable/ic_launcher_background"
         app:layout_constraintTop_toTopOf="@id/product_quantity"
         app:layout_constraintBottom_toBottomOf="@id/product_quantity"
@@ -223,8 +247,8 @@
         android:id="@+id/increment_quantity"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
         tools:src="@drawable/ic_launcher_background"
         app:layout_constraintTop_toTopOf="@id/product_quantity"
         app:layout_constraintBottom_toBottomOf="@id/product_quantity"

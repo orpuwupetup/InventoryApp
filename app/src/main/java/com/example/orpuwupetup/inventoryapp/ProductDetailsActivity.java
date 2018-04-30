@@ -1,8 +1,10 @@
 package com.example.orpuwupetup.inventoryapp;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -22,6 +24,8 @@ public class ProductDetailsActivity extends AppCompatActivity {
 
     final private static int INCREMENT_QUANTITY = 1;
     final private static int DECREMENT_QUANTITY = 2;
+
+    boolean isFabClicked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,43 @@ public class ProductDetailsActivity extends AppCompatActivity {
         productImage = findViewById(R.id.product_image);
         incrementQuantity = findViewById(R.id.increment_quantity);
         decrementQuantity = findViewById(R.id.decrement_quantity);
+        FloatingActionButton fab = findViewById(R.id.fab);
+        final FloatingActionButton deleteProductFab = findViewById(R.id.delete_product_fab);
+        final FloatingActionButton editProductFab = findViewById(R.id.edit_product_fab);
+
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isFabClicked){
+                    deleteProductFab.setVisibility(View.VISIBLE);
+                    editProductFab.setVisibility(View.VISIBLE);
+                    isFabClicked = true;
+                }else{
+                    deleteProductFab.setVisibility(View.GONE);
+                    editProductFab.setVisibility(View.GONE);
+                    isFabClicked = false;
+                }
+            }
+        });
+
+        deleteProductFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: Add dialog to ask user if he wants to really delete the product or not
+                getContentResolver().delete(productUri, null, null);
+                finish();
+            }
+        });
+
+        editProductFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent editDetails = new Intent(ProductDetailsActivity.this, AddProduct.class);
+                editDetails.putExtra("product_uri", productUri.toString());
+                startActivity(editDetails);
+            }
+        });
 
         populateViews();
 
@@ -90,6 +131,12 @@ public class ProductDetailsActivity extends AppCompatActivity {
             getContentResolver().update(productUri, values, null, null);
             quantity.setText(String.valueOf(newQuantity));
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        populateViews();
     }
 
     private void populateViews(){
