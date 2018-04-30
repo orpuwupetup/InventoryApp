@@ -142,7 +142,7 @@ public class ProductDetailsActivity extends AppCompatActivity {
     private void populateViews(){
 
 
-        // TODO: Display description and product image
+        // TODO: Display and product image
         String [] projection = {"*"};
         Cursor cursor = getContentResolver().query(productUri,
                 projection,
@@ -157,5 +157,6 @@ public class ProductDetailsActivity extends AppCompatActivity {
         quantity.setText(String.valueOf(cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_QUANTITY))));
         suplierPhoneNumber.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER)));
         suplierName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME)));
+        description.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION)));
     }
 }

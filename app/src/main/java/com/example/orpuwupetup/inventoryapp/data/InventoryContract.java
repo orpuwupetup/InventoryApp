@@ -46,6 +46,10 @@ public final class InventoryContract {
 
         public final static String _ID = BaseColumns._ID;
 
+        public final static String COLUMN_PRODUCT_DESCRIPTION = "product_description";
+
+        public final static String COLUMN_PRODUCT_IMAGE_URI_STRING = "image_uri_string";
+
         public final static String COLUMN_PRODUCT_NAME = "product_name";
 
         public final static String COLUMN_PRODUCT_PRICE = "price";

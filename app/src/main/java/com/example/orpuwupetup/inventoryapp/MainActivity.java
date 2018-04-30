@@ -31,6 +31,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private ListView productsList;
     private ProductCursorAdapter adapter;
 
+
+
+    // TODO: Add description
+    // TODO: Add images to the products and the table
+    // TODO: Add intent for calling to the Suplier from Details screen
+    // TODO: Add data validation
+    // TODO: Make app pretty
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

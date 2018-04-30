@@ -3,6 +3,8 @@ package com.example.orpuwupetup.inventoryapp.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
 import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntry;
 
 /**
@@ -14,7 +16,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "shop.db";
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // class constructor calling one of constructors of the super class (SQLiteOpenHelper)
     public InventoryDbHelper(Context context){
@@ -41,11 +43,13 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        /*
-        This method implementation is not mandatory, and I don't know exactly what to do here
-        so I'll just leave it with empty body. Can you give me some tips? If I change something in my table,
-        do I have to drop former one here, and create new one with correct values or number of columns?
-        or something entirely different? If you'll be so kind, please help me with this task.; )
-        */
+
+        String MODIFY_TABEL_ADD_DESCRIPTION = "ALTER TABLE " + InventoryEntry.TABLE_NAME + " ADD COLUMN " + InventoryEntry.COLUMN_PRODUCT_DESCRIPTION + " TEXT NOT NULL DEFAULT 'No description...';";
+
+        String MODIFY_TABEL_ADD_IMAGE_URI_STRING = "ALTER TABLE " + InventoryEntry.TABLE_NAME + " ADD COLUMN " + InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING + " TEXT;";
+
+        db.execSQL(MODIFY_TABEL_ADD_DESCRIPTION);
+        db.execSQL(MODIFY_TABEL_ADD_IMAGE_URI_STRING);
+        Log.d("dbhelper", "table modified!");
     }
 }
