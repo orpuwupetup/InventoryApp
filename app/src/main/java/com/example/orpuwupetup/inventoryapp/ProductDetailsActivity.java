@@ -142,7 +142,7 @@ public class ProductDetailsActivity extends AppCompatActivity {
     private void populateViews(){
 
 
-        // TODO: Display and product image
+        // TODO: Display product image
         String [] projection = {"*"};
         Cursor cursor = getContentResolver().query(productUri,
                 projection,

@@ -65,6 +65,10 @@ public class AddProduct extends AppCompatActivity {
             quantity.setText(String.valueOf(cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_QUANTITY))));
             suplierName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME)));
             suplierPhoneNumber.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER)));
+            String descriptionString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION));
+            if (!descriptionString.equals("No description...")){
+                description.setText(descriptionString);
+            }
 
             //TODO: Add description and image to the displayed details
 
@@ -98,8 +102,8 @@ public class AddProduct extends AppCompatActivity {
         String suplierPhoneNumberString = suplierPhoneNumber.getText().toString();
         String suplierNameString = suplierName.getText().toString();
         String descriptionString = description.getText().toString();
+        
         // TODO: Add method to get ImageUriString to image chosen from gallery
-        // TODO: Add description to the table
 
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, productQuantity);
@@ -107,6 +111,7 @@ public class AddProduct extends AppCompatActivity {
         values.put(InventoryEntry.COLUMN_PRODUCT_PRICE, productPriceInt);
         values.put(InventoryEntry.COLUMN_PRODUCT_NAME, productNameString);
         values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER, suplierPhoneNumberString);
+        values.put(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION, descriptionString);
 
         /*
         if we are in AddProductActivity, add new product, if we are in EditProductActivity, update
