@@ -1,8 +1,10 @@
 package com.example.orpuwupetup.inventoryapp;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -12,9 +14,12 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -37,7 +42,7 @@ public class AddProduct extends AppCompatActivity {
     final private static int PICK_IMAGE = 0;
     final static private int ADD_PRODUCT_ACTIVITY = 3;
     final static private int EDIT_PRODUCT_ACTIVITY = 5;
-    private boolean pictureWasPicked;
+    private boolean pictureWasPicked, productWasChanged;
     private int currentActivity;
 
 
@@ -66,7 +71,6 @@ public class AddProduct extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 addProduct();
-                finish();
             }
         });
 
@@ -132,6 +136,22 @@ public class AddProduct extends AppCompatActivity {
                 startActivityForResult(Intent.createChooser(getImage, "Select Picture"), PICK_IMAGE);
             }
         });
+
+        View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                productWasChanged = true;
+                return false;
+            }
+        };
+
+        changeImage.setOnTouchListener(mTouchListener);
+        productName.setOnTouchListener(mTouchListener);
+        price.setOnTouchListener(mTouchListener);
+        quantity.setOnTouchListener(mTouchListener);
+        description.setOnTouchListener(mTouchListener);
+        suplierPhoneNumber.setOnTouchListener(mTouchListener);
+        suplierName.setOnTouchListener(mTouchListener);
     }
 
     @Override
@@ -204,12 +224,118 @@ public class AddProduct extends AppCompatActivity {
         old product
         */
         if (currentActivity == ADD_PRODUCT_ACTIVITY) {
-            getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
+
+            String whatIsMissing = "";
+
+            if (suplierNameString.equals("") || suplierNameString.isEmpty()) {
+
+                whatIsMissing = whatIsMissing + "supplier name";
+            }
+
+            if (productNameString.equals("") || productNameString.isEmpty()){
+                if (!whatIsMissing.equals("")){
+                    whatIsMissing = whatIsMissing + " and product name";
+                }else{
+                    whatIsMissing = whatIsMissing + "product name";
+                }
+            }
+
+            if (productPriceInt == 0){
+                if (!whatIsMissing.equals("")){
+                    whatIsMissing = whatIsMissing + " and product price";
+                }else{
+                    whatIsMissing = whatIsMissing + "product price";
+                }
+            }
+
+            final ContentValues finalValues = values;
+
+            if(!whatIsMissing.equals("")) {
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Do you want to add product without " + whatIsMissing + "?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User clicked the "Yes" button, so add the product without those values.
+                        getContentResolver().insert(InventoryEntry.CONTENT_URI, finalValues);
+                        finish();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User clicked the "Cancel" button, so dismiss the dialog
+                        // and continue editing the product.
+                        if (dialog != null) {
+                            dialog.dismiss();
+                        }
+                    }
+                });
+
+                // Create and show the AlertDialog
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+            }else{
+                getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
+                finish();
+            }
+
         } else {
             getContentResolver().update(productUri, values, null, null);
+            finish();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(!productWasChanged) {
+            super.onBackPressed();
+            return;
         }
 
+        showDiscardChangesConfirmationDialog();
+
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case android.R.id.home:
+                if(currentActivity == ADD_PRODUCT_ACTIVITY){
+                    NavUtils.navigateUpFromSameTask(AddProduct.this);
+                }else{
+                    finish();
+                }
+                break;
+        }
+        return true;
+    }
+
+    private void showDiscardChangesConfirmationDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Do you want to discard changes?");
+        builder.setPositiveButton("Discard", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the pet.
+                finish();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
 
     private class AsyncImageLoadingTask extends AsyncTask<Uri, Void, Bitmap>{
         @Override

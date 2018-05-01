@@ -131,6 +131,20 @@ public class ProductProvider extends ContentProvider{
 
     private Uri insertProduct(Uri uri, ContentValues contentValues){
 
+
+        // Data validation
+            // Product should contain name, price and supplier name
+        if(contentValues.get(InventoryEntry.COLUMN_PRODUCT_NAME) == null){
+            throw new IllegalArgumentException("Product should have name");
+
+        }
+        if(contentValues.get(InventoryEntry.COLUMN_PRODUCT_PRICE) == null){
+            throw new IllegalArgumentException("Product should have price");
+        }
+        if(contentValues.get(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME) == null){
+            throw new IllegalArgumentException("Product should have supplier name");
+        }
+
         /*
         because I specified product name column to has an UNIQUE value, we can put each specific product values just once,
         so each time we want to put new entry in database we have to check if it is already present
@@ -142,8 +156,6 @@ public class ProductProvider extends ContentProvider{
 
         // open database in read mode to get old quantity value
         SQLiteDatabase readDb = dbHelper.getReadableDatabase();
-
-        // TODO: Add validation to the data that user wants to put in the data base
 
         // Insert a new row for product in the database, returning the ID of that new row.
         long newRowId = db.insert(InventoryEntry.TABLE_NAME, null, contentValues);
@@ -196,16 +208,21 @@ public class ProductProvider extends ContentProvider{
                 ContentValues updatedQuantity = new ContentValues();
                 updatedQuantity.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, newQuantity);
 
-                /* update table with new value of quantity of the product */
-                db.update(InventoryEntry.TABLE_NAME, updatedQuantity, InventoryEntry.COLUMN_PRODUCT_NAME + "=?", whereClause);
+                /* update table with new value of quantity of the product (if its different than 0) */
+                if(Integer.parseInt(contentValues.getAsString(InventoryEntry.COLUMN_PRODUCT_QUANTITY)) != 0) {
 
-                // close cursor and tell user quantity of what was updated and by how much
-                cursor.close();
-                Toast.makeText(getContext(), "Quantity of " + whereClause[0] + " was updated by "
-                        + contentValues.get(InventoryEntry.COLUMN_PRODUCT_QUANTITY), Toast.LENGTH_LONG).show();
+                    db.update(InventoryEntry.TABLE_NAME, updatedQuantity, InventoryEntry.COLUMN_PRODUCT_NAME + "=?", whereClause);
 
-                // notify that data in the database has been changed
-                wasInserted = true;
+                    // close cursor and tell user quantity of what was updated and by how much
+                    cursor.close();
+                    Toast.makeText(getContext(), whereClause[0] + " was in the table already, its quantity is updated by "
+                            + contentValues.get(InventoryEntry.COLUMN_PRODUCT_QUANTITY), Toast.LENGTH_LONG).show();
+
+                    // notify that data in the database has been changed
+                    wasInserted = true;
+                }else{
+                    Toast.makeText(getContext(), whereClause[0] + " was already added to the table.", Toast.LENGTH_SHORT).show();
+                }
             } catch (CursorIndexOutOfBoundsException e) {
                 Toast.makeText(getContext(), "Problem with adding product", Toast.LENGTH_LONG).show();
             }

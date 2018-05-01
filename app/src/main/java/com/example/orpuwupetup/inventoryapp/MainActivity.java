@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private ListView productsList;
     private ProductCursorAdapter adapter;
-    
+
     // TODO: Add data validation (with displaying Dialogs for some things)
     // TODO: Make app pretty
     @Override
