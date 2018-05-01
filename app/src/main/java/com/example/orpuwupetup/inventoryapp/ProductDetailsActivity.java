@@ -3,10 +3,14 @@ package com.example.orpuwupetup.inventoryapp;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -15,12 +19,15 @@ import android.widget.Toast;
 
 import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntry;
 
+import java.io.IOException;
+
 public class ProductDetailsActivity extends AppCompatActivity {
 
     TextView productName, price, quantity, suplierPhoneNumber, suplierName, description;
     ImageView productImage;
     ImageButton incrementQuantity, decrementQuantity;
     Uri productUri;
+    String suplierPhoneNumberString;
 
     final private static int INCREMENT_QUANTITY = 1;
     final private static int DECREMENT_QUANTITY = 2;
@@ -49,9 +56,12 @@ public class ProductDetailsActivity extends AppCompatActivity {
         productImage = findViewById(R.id.product_image);
         incrementQuantity = findViewById(R.id.increment_quantity);
         decrementQuantity = findViewById(R.id.decrement_quantity);
+        ImageButton dialSuplierButton = findViewById(R.id.call_suplier_button);
         FloatingActionButton fab = findViewById(R.id.fab);
         final FloatingActionButton deleteProductFab = findViewById(R.id.delete_product_fab);
         final FloatingActionButton editProductFab = findViewById(R.id.edit_product_fab);
+
+
 
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -88,6 +98,24 @@ public class ProductDetailsActivity extends AppCompatActivity {
         });
 
         populateViews();
+
+        dialSuplierButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                try {
+                    if (!suplierPhoneNumberString.equals("") || !suplierPhoneNumberString.isEmpty()) {
+                        Intent diallSuplier = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", suplierPhoneNumberString, null));
+                        startActivity(diallSuplier);
+                    } else {
+                        Toast.makeText(ProductDetailsActivity.this, "Invalid supplier phone number", Toast.LENGTH_SHORT).show();
+                    }
+                }catch (NullPointerException e){
+                    Toast.makeText(ProductDetailsActivity.this, "No supplier phone number", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
 
         incrementQuantity.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -142,7 +170,6 @@ public class ProductDetailsActivity extends AppCompatActivity {
     private void populateViews(){
 
 
-        // TODO: Display product image
         String [] projection = {"*"};
         Cursor cursor = getContentResolver().query(productUri,
                 projection,
@@ -158,5 +185,68 @@ public class ProductDetailsActivity extends AppCompatActivity {
         suplierPhoneNumber.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER)));
         suplierName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME)));
         description.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION)));
+
+        String productImageUriString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING));
+
+        try {
+            suplierPhoneNumberString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER));
+        }catch (NullPointerException e){
+            Toast.makeText(this, "No supplier phone number", Toast.LENGTH_SHORT).show();
+        }
+
+        try {
+            AsyncImageLoadingTask loadImageTask = new AsyncImageLoadingTask();
+            loadImageTask.execute(Uri.parse(productImageUriString));
+        } catch (NullPointerException e){
+            Log.d("Loading image", "Product has no image selected (probably.;P), just display generic image for product");
+        }
+    }
+
+    private class AsyncImageLoadingTask extends AsyncTask<Uri, Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(Uri... uris) {
+            if(uris[0] == null || uris.length == 0){
+                return null;
+            }
+            return getBitmapFromUri(uris[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+
+            if (bitmap != null) {
+                productImage.setImageBitmap(bitmap);
+            }
+        }
+
+        private Bitmap getBitmapFromUri(Uri uri) {
+
+            if (uri == null || uri.toString().isEmpty()) {
+                return null;
+            }
+
+            Bitmap scaled = null;
+
+            try {
+                Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                int imageHeight = imageBitmap.getHeight();
+                int imageWidth = imageBitmap.getWidth();
+
+                int newWidthHeight = (int) getResources().getDimension(R.dimen.image_width_and_height);
+
+                if (imageHeight < imageWidth) {
+                    scaled = Bitmap.createScaledBitmap(imageBitmap, (imageWidth * newWidthHeight) / imageHeight, newWidthHeight, false);
+                } else if (imageHeight > imageWidth) {
+                    scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, (imageHeight * newWidthHeight) / imageWidth, false);
+                } else {
+                    scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, newWidthHeight, false);
+                }
+            }catch (IOException e){
+                Log.d("getBitmapFromUri", "problem loading image");
+            }
+
+            return scaled;
+        }
     }
 }

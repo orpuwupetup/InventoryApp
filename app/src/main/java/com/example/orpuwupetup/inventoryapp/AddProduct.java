@@ -103,10 +103,9 @@ public class AddProduct extends AppCompatActivity {
             String currentImageUriString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING));
             if (!currentImageUriString.equals("") || !currentImageUriString.isEmpty()) {
 
-                productImage.setImageBitmap(getBitmapFromUri(Uri.parse(currentImageUriString)));
+                AsyncImageLoadingTask asyncLoadTask = new AsyncImageLoadingTask();
+                asyncLoadTask.execute(Uri.parse(currentImageUriString));
             }
-
-            //TODO: Add image to the displayed details
 
         } catch (NullPointerException e) {
             if (currentActivity != EDIT_PRODUCT_ACTIVITY) {
@@ -151,7 +150,8 @@ public class AddProduct extends AppCompatActivity {
                         */
                         imageUriString = data.getData().toString();
 
-                        productImage.setImageBitmap(getBitmapFromUri(Uri.parse(imageUriString)));
+                        AsyncImageLoadingTask asyncLoadTask = new AsyncImageLoadingTask();
+                        asyncLoadTask.execute(Uri.parse(imageUriString));
 
                         pictureWasPicked = true;
 
@@ -161,35 +161,6 @@ public class AddProduct extends AppCompatActivity {
                     }
                 }
         }
-    }
-
-    public Bitmap getBitmapFromUri(Uri uri) {
-
-        if (uri == null || uri.toString().isEmpty()) {
-            return null;
-        }
-
-        Bitmap scaled = null;
-
-        try {
-            Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-            int imageHeight = imageBitmap.getHeight();
-            int imageWidth = imageBitmap.getWidth();
-
-            int newWidthHeight = (int) getResources().getDimension(R.dimen.image_width_and_height);
-
-            if (imageHeight < imageWidth) {
-                scaled = Bitmap.createScaledBitmap(imageBitmap, (imageWidth * newWidthHeight) / imageHeight, newWidthHeight, false);
-            } else if (imageHeight > imageWidth) {
-                scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, (imageHeight * newWidthHeight) / imageWidth, false);
-            } else {
-                scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, newWidthHeight, false);
-            }
-        }catch (IOException e){
-            Log.d("getBitmapFromUri", "problem loading image");
-        }
-
-        return scaled;
     }
 
     private void addProduct() {
@@ -216,8 +187,6 @@ public class AddProduct extends AppCompatActivity {
         String suplierNameString = suplierName.getText().toString();
         String descriptionString = description.getText().toString();
 
-        // TODO: Add method to get ImageUriString to image chosen from gallery
-
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, productQuantity);
         values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME, suplierNameString);
@@ -225,7 +194,7 @@ public class AddProduct extends AppCompatActivity {
         values.put(InventoryEntry.COLUMN_PRODUCT_NAME, productNameString);
         values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER, suplierPhoneNumberString);
         values.put(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION, descriptionString);
-        
+
         if(pictureWasPicked) {
             values.put(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING, imageUriString);
         }
@@ -240,5 +209,53 @@ public class AddProduct extends AppCompatActivity {
             getContentResolver().update(productUri, values, null, null);
         }
 
+    }
+
+    private class AsyncImageLoadingTask extends AsyncTask<Uri, Void, Bitmap>{
+        @Override
+        protected Bitmap doInBackground(Uri... uris) {
+            if(uris[0] == null || uris.length == 0){
+                return null;
+            }
+            return getBitmapFromUri(uris[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+
+            if (bitmap != null) {
+                productImage.setImageBitmap(bitmap);
+            }
+        }
+
+        private Bitmap getBitmapFromUri(Uri uri) {
+
+            if (uri == null || uri.toString().isEmpty()) {
+                return null;
+            }
+
+            Bitmap scaled = null;
+
+            try {
+                Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                int imageHeight = imageBitmap.getHeight();
+                int imageWidth = imageBitmap.getWidth();
+
+                int newWidthHeight = (int) getResources().getDimension(R.dimen.image_width_and_height);
+
+                if (imageHeight < imageWidth) {
+                    scaled = Bitmap.createScaledBitmap(imageBitmap, (imageWidth * newWidthHeight) / imageHeight, newWidthHeight, false);
+                } else if (imageHeight > imageWidth) {
+                    scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, (imageHeight * newWidthHeight) / imageWidth, false);
+                } else {
+                    scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, newWidthHeight, false);
+                }
+            }catch (IOException e){
+                Log.d("getBitmapFromUri", "problem loading image");
+            }
+
+            return scaled;
+        }
     }
 }
