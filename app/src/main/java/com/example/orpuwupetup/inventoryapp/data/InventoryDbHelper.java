@@ -52,4 +52,6 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
         db.execSQL(MODIFY_TABEL_ADD_IMAGE_URI_STRING);
         Log.d("dbhelper", "table modified!");
     }
+
+
 }

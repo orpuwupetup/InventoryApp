@@ -1,22 +1,47 @@
 package com.example.orpuwupetup.inventoryapp;
 
+import android.app.LoaderManager;
+import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.Toast;
+
 import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntry;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class AddProduct extends AppCompatActivity {
 
     EditText productName, price, quantity, suplierPhoneNumber, suplierName, description;
     Uri productUri;
+    ImageButton changeImage;
+    String imageUriString;
+    ImageView productImage;
+    final private static int PICK_IMAGE = 0;
+    final static private int ADD_PRODUCT_ACTIVITY = 3;
+    final static private int EDIT_PRODUCT_ACTIVITY = 5;
+    private boolean pictureWasPicked;
+    private int currentActivity;
 
 
-    // TODO: Change so that on back button click or on up button click, user will be send to the Details
+    // TODO: Change so that on up button click, user will be send to the Details
     // TODO: Activity (if he is in the EditProduct Activity) and to Main if he is in AddProductActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +56,9 @@ public class AddProduct extends AppCompatActivity {
         suplierPhoneNumber = findViewById(R.id.phone_number_edit_text);
         suplierName = findViewById(R.id.suplier_name_edit_text);
         description = findViewById(R.id.description_edit_text);
+        changeImage = findViewById(R.id.change_image_button);
+        productImage = findViewById(R.id.product_image);
+
 
         // find floating button and set onClickListener on it
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -47,12 +75,14 @@ public class AddProduct extends AppCompatActivity {
         we are in AddProductActivity
         */
         try {
-            // Edit details
+            // we are in Edit details
             productUri = Uri.parse(getIntent().getExtras().getString("product_uri"));
             this.setTitle("Edit product details");
 
+            currentActivity = EDIT_PRODUCT_ACTIVITY;
+
             // get details of the editing product and display them on screen
-            String [] projection = {"*"};
+            String[] projection = {"*"};
             Cursor cursor = getContentResolver().query(productUri,
                     projection,
                     null,
@@ -66,20 +96,103 @@ public class AddProduct extends AppCompatActivity {
             suplierName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME)));
             suplierPhoneNumber.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER)));
             String descriptionString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION));
-            if (!descriptionString.equals("No description...")){
+            if (!descriptionString.equals("No description...")) {
                 description.setText(descriptionString);
             }
 
-            //TODO: Add description and image to the displayed details
+            String currentImageUriString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING));
+            if (!currentImageUriString.equals("") || !currentImageUriString.isEmpty()) {
 
-        }catch (NullPointerException e){
-            // Add new product
-            productUri = null;
-            this.setTitle("Add new product");
+                productImage.setImageBitmap(getBitmapFromUri(Uri.parse(currentImageUriString)));
+            }
+
+            //TODO: Add image to the displayed details
+
+        } catch (NullPointerException e) {
+            if (currentActivity != EDIT_PRODUCT_ACTIVITY) {
+                // we are in Add new product activity
+                currentActivity = ADD_PRODUCT_ACTIVITY;
+                productUri = null;
+                this.setTitle("Add new product");
+            }
+        }
+
+        changeImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent getImage;
+
+                if (Build.VERSION.SDK_INT < 19) {
+                    getImage = new Intent(Intent.ACTION_GET_CONTENT);
+                } else {
+                    getImage = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    getImage.addCategory(Intent.CATEGORY_OPENABLE);
+                }
+                getImage.putExtra("product_uri", productUri);
+                getImage.setType("image/*");
+                startActivityForResult(Intent.createChooser(getImage, "Select Picture"), PICK_IMAGE);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+
+            case PICK_IMAGE:
+                if (resultCode == RESULT_OK) {
+
+                    try {
+                        /*
+                        if the image we picked is correct, we can assign it to the ImageView (but
+                        not save it to the product yet)
+                        */
+                        imageUriString = data.getData().toString();
+
+                        productImage.setImageBitmap(getBitmapFromUri(Uri.parse(imageUriString)));
+
+                        pictureWasPicked = true;
+
+                    } catch (NullPointerException e) {
+                        Toast.makeText(this, "Problem fetching image", Toast.LENGTH_SHORT).show();
+                        imageUriString = "";
+                    }
+                }
         }
     }
 
-    private void addProduct(){
+    public Bitmap getBitmapFromUri(Uri uri) {
+
+        if (uri == null || uri.toString().isEmpty()) {
+            return null;
+        }
+
+        Bitmap scaled = null;
+
+        try {
+            Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+            int imageHeight = imageBitmap.getHeight();
+            int imageWidth = imageBitmap.getWidth();
+
+            int newWidthHeight = (int) getResources().getDimension(R.dimen.image_width_and_height);
+
+            if (imageHeight < imageWidth) {
+                scaled = Bitmap.createScaledBitmap(imageBitmap, (imageWidth * newWidthHeight) / imageHeight, newWidthHeight, false);
+            } else if (imageHeight > imageWidth) {
+                scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, (imageHeight * newWidthHeight) / imageWidth, false);
+            } else {
+                scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, newWidthHeight, false);
+            }
+        }catch (IOException e){
+            Log.d("getBitmapFromUri", "problem loading image");
+        }
+
+        return scaled;
+    }
+
+    private void addProduct() {
 
         // get all of inputs to the new product
         String productNameString = productName.getText().toString();
@@ -89,20 +202,20 @@ public class AddProduct extends AppCompatActivity {
         try {
             // save price as integer (number of cents)
             productPriceInt = (int) (Float.parseFloat(price.getText().toString()) * 100);
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             // if there was no price provided, set it as 0
             productPriceInt = 0;
         }
         int productQuantity;
         try {
             productQuantity = Integer.parseInt(quantity.getText().toString());
-        }catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             productQuantity = 0;
         }
         String suplierPhoneNumberString = suplierPhoneNumber.getText().toString();
         String suplierNameString = suplierName.getText().toString();
         String descriptionString = description.getText().toString();
-        
+
         // TODO: Add method to get ImageUriString to image chosen from gallery
 
         ContentValues values = new ContentValues();
@@ -112,14 +225,18 @@ public class AddProduct extends AppCompatActivity {
         values.put(InventoryEntry.COLUMN_PRODUCT_NAME, productNameString);
         values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER, suplierPhoneNumberString);
         values.put(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION, descriptionString);
+        
+        if(pictureWasPicked) {
+            values.put(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING, imageUriString);
+        }
 
         /*
         if we are in AddProductActivity, add new product, if we are in EditProductActivity, update
         old product
         */
-        if(productUri == null) {
+        if (currentActivity == ADD_PRODUCT_ACTIVITY) {
             getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
-        }else{
+        } else {
             getContentResolver().update(productUri, values, null, null);
         }
 
