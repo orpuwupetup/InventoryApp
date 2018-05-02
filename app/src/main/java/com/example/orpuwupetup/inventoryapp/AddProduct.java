@@ -130,9 +130,13 @@ public class AddProduct extends AppCompatActivity {
                 } else {
                     getImage = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     getImage.addCategory(Intent.CATEGORY_OPENABLE);
+                    getImage.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    getImage.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                 }
                 getImage.putExtra("product_uri", productUri);
                 getImage.setType("image/*");
+                getImage.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                getImage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivityForResult(Intent.createChooser(getImage, "Select Picture"), PICK_IMAGE);
             }
         });
@@ -168,6 +172,15 @@ public class AddProduct extends AppCompatActivity {
                         if the image we picked is correct, we can assign it to the ImageView (but
                         not save it to the product yet)
                         */
+
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                            final int takeFlags = data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                            ContentResolver resolver = this.getContentResolver();
+                            if(data.getData() != null) {
+                                resolver.takePersistableUriPermission(data.getData(), takeFlags);
+                            }
+                        }
+
                         imageUriString = data.getData().toString();
 
                         AsyncImageLoadingTask asyncLoadTask = new AsyncImageLoadingTask();
@@ -226,15 +239,18 @@ public class AddProduct extends AppCompatActivity {
         if (currentActivity == ADD_PRODUCT_ACTIVITY) {
 
             String whatIsMissing = "";
+            int missingValues = 0;
 
             if (suplierNameString.equals("") || suplierNameString.isEmpty()) {
 
                 whatIsMissing = whatIsMissing + "supplier name";
+                missingValues++;
             }
 
             if (productNameString.equals("") || productNameString.isEmpty()){
                 if (!whatIsMissing.equals("")){
                     whatIsMissing = whatIsMissing + " and product name";
+                    missingValues++;
                 }else{
                     whatIsMissing = whatIsMissing + "product name";
                 }
@@ -243,9 +259,13 @@ public class AddProduct extends AppCompatActivity {
             if (productPriceInt == 0){
                 if (!whatIsMissing.equals("")){
                     whatIsMissing = whatIsMissing + " and product price";
+                    missingValues++;
                 }else{
                     whatIsMissing = whatIsMissing + "product price";
                 }
+            }
+            if(missingValues == 3){
+                whatIsMissing = whatIsMissing.replaceFirst(" and", ",");
             }
 
             final ContentValues finalValues = values;
@@ -281,7 +301,13 @@ public class AddProduct extends AppCompatActivity {
             }
 
         } else {
-            getContentResolver().update(productUri, values, null, null);
+
+            if(productWasChanged) {
+                getContentResolver().update(productUri, values, null, null);
+                Toast.makeText(this, "Product details updated", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(this, "No info was updated", Toast.LENGTH_SHORT).show();
+            }
             finish();
         }
     }
@@ -343,6 +369,7 @@ public class AddProduct extends AppCompatActivity {
             if(uris[0] == null || uris.length == 0){
                 return null;
             }
+
             return getBitmapFromUri(uris[0]);
         }
 

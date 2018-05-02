@@ -13,4 +13,5 @@
     <string name="suplier_name">Suplier name</string>
     <string name="name">Name:</string>
     <string name="suplier_info">Suplier info:</string>
+    <string name="toast_message_product_already_in_table_quantity_updated">was in the table already, its quantity is updated by</string>
 </resources>

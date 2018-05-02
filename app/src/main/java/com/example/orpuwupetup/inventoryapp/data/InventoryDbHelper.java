@@ -11,14 +11,14 @@ import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntr
  * Created by cezar on 22.04.2018.
  */
 
-// Helper class for creating and managing data base file
+/** Helper class for creating and managing data base file */
 public class InventoryDbHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "shop.db";
 
     private static final int DATABASE_VERSION = 2;
 
-    // class constructor calling one of constructors of the super class (SQLiteOpenHelper)
+    /** class constructor calling one of constructors of the super class (SQLiteOpenHelper) */
     public InventoryDbHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -26,7 +26,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        // create String that contains SQL statement to create new data base
+        // create String that contains SQL statement to create new data base if there is none before
         String SQL_CREATE_INVENTORY_TABLE = "CREATE TABLE " + InventoryEntry.TABLE_NAME + " ("
                 + InventoryEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + InventoryEntry.COLUMN_PRODUCT_NAME + " TEXT NOT NULL UNIQUE, " // this one is UNIQUE because I want only one entry of specific product in my database, just change it quantity to higher if I find more pieces of it
@@ -42,14 +42,15 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+        /*
+        I needed to update my database and add 2 new columns to it, one for storing products descriptions
+        and one for image Uri Strings for product images (if any were chosen)
+        */
         String MODIFY_TABEL_ADD_DESCRIPTION = "ALTER TABLE " + InventoryEntry.TABLE_NAME + " ADD COLUMN " + InventoryEntry.COLUMN_PRODUCT_DESCRIPTION + " TEXT NOT NULL DEFAULT 'No description...';";
 
         String MODIFY_TABEL_ADD_IMAGE_URI_STRING = "ALTER TABLE " + InventoryEntry.TABLE_NAME + " ADD COLUMN " + InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING + " TEXT;";
 
         db.execSQL(MODIFY_TABEL_ADD_DESCRIPTION);
         db.execSQL(MODIFY_TABEL_ADD_IMAGE_URI_STRING);
-        Log.d("dbhelper", "table modified!");
     }
-
-
 }

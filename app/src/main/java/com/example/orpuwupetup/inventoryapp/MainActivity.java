@@ -31,8 +31,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private ListView productsList;
     private ProductCursorAdapter adapter;
 
-    // TODO: Add data validation (with displaying Dialogs for some things)
     // TODO: Make app pretty
+        // TODO: Add icons to floating buttons
+        // TODO: Add animation to floating buttons
+        // TODO: Change font colors in the main list
+        // TODO: Change font colors in the details activity
+        // TODO: Add emptyView to the main list
+        // TODO: Add default picture of the product
+        // TODO: maybe change layout of the Details activity a little (blue views under "price" and "quantity" headers? blue circle around productImage?)
+        // TODO: Add icons to buttons
+            // TODO: Choosing Image
+            // TODO: Sale and increment and decrement of quantity
+
+
+    // TODO: Add comments and clean the code
+        // TODO: Exctract Strings resources
+        // TODO: Clean code of unused methods and white spaces
+        // TODO: Add more comments in correct places
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

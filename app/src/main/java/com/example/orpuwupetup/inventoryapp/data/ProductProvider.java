@@ -4,6 +4,7 @@ import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
@@ -11,6 +12,8 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
+
+import com.example.orpuwupetup.inventoryapp.R;
 import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntry;
 
 import java.net.URI;
@@ -35,7 +38,7 @@ public class ProductProvider extends ContentProvider{
     /** variable telling if insertion to the table was present (or quantity of existing product changed) */
     private boolean wasInserted;
 
-    // Static initializer to add our two codes to the UriMatcher
+    /** Static initializer to add our two codes to the UriMatcher */
     static {
         sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_INVENTORY, ALL_PRODUCTS);
         sUriMatcher.addURI(InventoryContract.CONTENT_AUTHORITY, InventoryContract.PATH_INVENTORY + "/#", PRODUCT_ID);
@@ -136,7 +139,6 @@ public class ProductProvider extends ContentProvider{
             // Product should contain name, price and supplier name
         if(contentValues.get(InventoryEntry.COLUMN_PRODUCT_NAME) == null){
             throw new IllegalArgumentException("Product should have name");
-
         }
         if(contentValues.get(InventoryEntry.COLUMN_PRODUCT_PRICE) == null){
             throw new IllegalArgumentException("Product should have price");
@@ -210,16 +212,17 @@ public class ProductProvider extends ContentProvider{
 
                 /* update table with new value of quantity of the product (if its different than 0) */
                 if(Integer.parseInt(contentValues.getAsString(InventoryEntry.COLUMN_PRODUCT_QUANTITY)) != 0) {
-
                     db.update(InventoryEntry.TABLE_NAME, updatedQuantity, InventoryEntry.COLUMN_PRODUCT_NAME + "=?", whereClause);
 
                     // close cursor and tell user quantity of what was updated and by how much
                     cursor.close();
-                    Toast.makeText(getContext(), whereClause[0] + " was in the table already, its quantity is updated by "
-                            + contentValues.get(InventoryEntry.COLUMN_PRODUCT_QUANTITY), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), whereClause[0] + " "
+                            + getContext().getResources().getString(R.string.toast_message_product_already_in_table_quantity_updated)
+                            + " " + contentValues.get(InventoryEntry.COLUMN_PRODUCT_QUANTITY), Toast.LENGTH_LONG).show();
 
                     // notify that data in the database has been changed
                     wasInserted = true;
+                    // TODO: Extract all string to the R.Strings
                 }else{
                     Toast.makeText(getContext(), whereClause[0] + " was already added to the table.", Toast.LENGTH_SHORT).show();
                 }
@@ -238,7 +241,6 @@ public class ProductProvider extends ContentProvider{
         // close readable and writable database to prevent memory leaks
         readDb.close();
         db.close();
-
         return ContentUris.withAppendedId(uri, newRowId);
     }
 
@@ -290,9 +292,11 @@ public class ProductProvider extends ContentProvider{
                 return updateProduct(uri, values, selection, selectionArgs);
             case PRODUCT_ID:
 
-                // For the PRODUCT_ID code, extract out the ID from the URI,
-                // so we know which row to update. Selection will be "_id=?" and selection
-                // arguments will be a String array containing the actual ID.
+                /*
+                For the PRODUCT_ID code, extract out the ID from the URI,
+                so we know which row to update. Selection will be "_id=?" and selection
+                arguments will be a String array containing the actual ID.
+                */
                 selection = InventoryEntry._ID + "=?";
                 selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
                 int updatedRows = updateProduct(uri, values, selection, selectionArgs);
@@ -310,16 +314,16 @@ public class ProductProvider extends ContentProvider{
 
     private int updateProduct (Uri uri, ContentValues values, String selection, String[] selectionArgs){
 
-        // TODO: Add product update validation methods (if there are any empty values or something like that
         /*
-        If there are no values to update, then don't try to update the database, otherwise update
+        We don't have to check anything here, (except size of ContentValues provided) because all
+        data types (and scopes) are checked at the user input
+            If there are no values to update, then don't try to update the database, otherwise update
         the database with new info
         */
         if (values.size() == 0) {
             return 0;
         }
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-
         return db.update(InventoryEntry.TABLE_NAME, values, selection, selectionArgs);
     }
 }
