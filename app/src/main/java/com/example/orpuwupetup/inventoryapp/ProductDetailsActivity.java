@@ -1,6 +1,8 @@
 package com.example.orpuwupetup.inventoryapp;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -85,8 +87,35 @@ public class ProductDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // TODO: Add dialog to ask user if he wants to really delete the product or not
-                getContentResolver().delete(productUri, null, null);
-                finish();
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(ProductDetailsActivity.this);
+                builder.setMessage(getResources().getString(R.string.delete_product_dialog_message));
+                builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        // User clicked the "Yes" button, so delete the product.
+                        getContentResolver().delete(productUri, null, null);
+                        finish();
+                    }
+                });
+                builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                /*
+                User clicked the "Cancel" button, so dismiss the dialog
+                and continue editing the product.
+                */
+                        if (dialog != null) {
+                            dialog.dismiss();
+                        }
+                    }
+                });
+
+                // Create and show the AlertDialog
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+
+
             }
         });
         editProductFab.setOnClickListener(new View.OnClickListener() {

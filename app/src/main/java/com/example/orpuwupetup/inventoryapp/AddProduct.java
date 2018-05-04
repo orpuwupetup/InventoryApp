@@ -271,7 +271,7 @@ public class AddProduct extends AppCompatActivity {
             int missingValues = 0;
             if (suplierNameString.equals("") || suplierNameString.isEmpty()) {
 
-                whatIsMissing = whatIsMissing + getResources().getString(R.string.supplier_name_lower_case);
+                whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.supplier_name_lower_case);
                 missingValues++;
             }
             if (productNameString.equals("") || productNameString.isEmpty()){
@@ -279,7 +279,7 @@ public class AddProduct extends AppCompatActivity {
                     whatIsMissing = whatIsMissing + " "+ getResources().getString(R.string.and_product_name);
                     missingValues++;
                 }else{
-                    whatIsMissing = whatIsMissing + getResources().getString(R.string.product_name_lower_case);
+                    whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_name_lower_case);
                 }
             }
             if (productPriceInt == 0){
@@ -287,7 +287,7 @@ public class AddProduct extends AppCompatActivity {
                     whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.and_product_price);
                     missingValues++;
                 }else{
-                    whatIsMissing = whatIsMissing + getResources().getString(R.string.product_price_lower_case);
+                    whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_price_lower_case);
                 }
             }
             if(missingValues == 3){
