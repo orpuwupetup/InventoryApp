@@ -21,6 +21,7 @@ import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntr
 
 public class ProductCursorAdapter extends CursorAdapter {
 
+    /** Global variables */
     public  ProductCursorAdapter (Context context, Cursor c) {
         super(context, c, 0 /* flags */);
     }
@@ -84,7 +85,7 @@ public class ProductCursorAdapter extends CursorAdapter {
 
                     // else, notify the user with toast message
                 }else{
-                    Toast.makeText(context, "Nothing left, can't sell more", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getResources().getString(R.string.toast_message_cant_sell_more_nothings_left), Toast.LENGTH_SHORT).show();
                 }
             }
         });

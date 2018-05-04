@@ -23,6 +23,7 @@ import java.io.IOException;
 
 public class ProductDetailsActivity extends AppCompatActivity {
 
+    /** Global variables */
     TextView productName, price, quantity, suplierPhoneNumber, suplierName, description;
     ImageView productImage;
     ImageButton incrementQuantity, decrementQuantity;
@@ -31,6 +32,7 @@ public class ProductDetailsActivity extends AppCompatActivity {
 
     final private static int INCREMENT_QUANTITY = 1;
     final private static int DECREMENT_QUANTITY = 2;
+    final private static String PRODUCT_URI_KEY = "product_uri";
 
     boolean isFabClicked = false;
 
@@ -39,9 +41,9 @@ public class ProductDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_details);
 
-
+        // try to fetch Uri of the product from the intent, we get at the start of Activity
         try {
-            productUri = Uri.parse(getIntent().getExtras().getString("product_uri"));
+            productUri = Uri.parse(getIntent().getExtras().getString(PRODUCT_URI_KEY));
         }catch (NullPointerException e){
             productUri = null;
         }
@@ -61,9 +63,8 @@ public class ProductDetailsActivity extends AppCompatActivity {
         final FloatingActionButton deleteProductFab = findViewById(R.id.delete_product_fab);
         final FloatingActionButton editProductFab = findViewById(R.id.edit_product_fab);
 
-
-
-
+        // set on click listener to expand or contract "floating menu"
+        // TODO: Set animation for the 2 fab buttons
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,6 +80,7 @@ public class ProductDetailsActivity extends AppCompatActivity {
             }
         });
 
+        // set floating buttons of our "floating menu" to delete product, or go to EditProductActivity
         deleteProductFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,18 +89,22 @@ public class ProductDetailsActivity extends AppCompatActivity {
                 finish();
             }
         });
-
         editProductFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent editDetails = new Intent(ProductDetailsActivity.this, AddProduct.class);
-                editDetails.putExtra("product_uri", productUri.toString());
+                editDetails.putExtra(PRODUCT_URI_KEY, productUri.toString());
                 startActivity(editDetails);
             }
         });
 
+        // fill all the view in the Activity with available information about the currently opened product
         populateViews();
 
+        /*
+        set phone button to either dial supplier number, or say to user that we don't have supplier number,
+        or provided number is incorrect
+        */
         dialSuplierButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -108,22 +114,21 @@ public class ProductDetailsActivity extends AppCompatActivity {
                         Intent diallSuplier = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", suplierPhoneNumberString, null));
                         startActivity(diallSuplier);
                     } else {
-                        Toast.makeText(ProductDetailsActivity.this, "Invalid supplier phone number", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProductDetailsActivity.this, getResources().getString(R.string.toast_message_invalid_supplier_number), Toast.LENGTH_SHORT).show();
                     }
                 }catch (NullPointerException e){
-                    Toast.makeText(ProductDetailsActivity.this, "No supplier phone number", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProductDetailsActivity.this, getResources().getString(R.string.toast_message_no_supplier_number), Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
 
+        // set buttons incrementing and decrementing quantity of currently displayed product
         incrementQuantity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 changeQuantity(INCREMENT_QUANTITY);
             }
         });
-
         decrementQuantity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,7 +138,13 @@ public class ProductDetailsActivity extends AppCompatActivity {
 
     }
 
+    /*
+    method for changing quantity of displayed product (either decrement or increment it, according
+    to what input method has)
+    */
     private void changeQuantity(int whichButton){
+
+        // check former quantity
         String [] projection = {InventoryEntry.COLUMN_PRODUCT_QUANTITY};
         Cursor cursor = getContentResolver().query(productUri,
                 projection,
@@ -144,9 +155,14 @@ public class ProductDetailsActivity extends AppCompatActivity {
         int currentQuantity = cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_QUANTITY));
         int newQuantity = currentQuantity;
         ContentValues values = new ContentValues();
+
+        /*
+        if we want to decrement quantity, additionally check if it is not already at 0 (if it is
+        tell tp the user that he have nothing to sell)
+        */
         if(whichButton == DECREMENT_QUANTITY) {
             if(currentQuantity == 0){
-                Toast.makeText(this, "Can't sell more, nothings left", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getResources().getString(R.string.toast_message_cant_sell_more_nothings_left), Toast.LENGTH_LONG).show();
             }else {
                 newQuantity = currentQuantity - 1;
             }
@@ -154,6 +170,10 @@ public class ProductDetailsActivity extends AppCompatActivity {
             newQuantity = currentQuantity + 1;
         }
 
+        /*
+        if new quantity is different than former quantity, update quantity of product in the table
+        and display it to the user
+        */
         if(currentQuantity != newQuantity){
             values.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, newQuantity);
             getContentResolver().update(productUri, values, null, null);
@@ -161,15 +181,17 @@ public class ProductDetailsActivity extends AppCompatActivity {
         }
     }
 
+    // fill views with updated info after user comes back from EditProductActivity
     @Override
     protected void onResume() {
         super.onResume();
         populateViews();
     }
 
+    // method for filling views with information about product, taken from the SQL table
     private void populateViews(){
 
-
+        // get info about product from table, from row specified by product Uri we got via intent
         String [] projection = {"*"};
         Cursor cursor = getContentResolver().query(productUri,
                 projection,
@@ -177,6 +199,8 @@ public class ProductDetailsActivity extends AppCompatActivity {
                 null,
                 null);
         cursor.moveToFirst();
+
+        // extract all the information from provided cursor
         productName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_NAME)));
         double priceValue = 0.01 * (cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_PRICE)));
         String priceString = String.valueOf(priceValue) + " $";
@@ -185,15 +209,19 @@ public class ProductDetailsActivity extends AppCompatActivity {
         suplierPhoneNumber.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER)));
         suplierName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME)));
         description.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION)));
-
         String productImageUriString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING));
 
+        // try to get phone number of products supplier, if there is non, tell it to the user
         try {
             suplierPhoneNumberString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER));
         }catch (NullPointerException e){
-            Toast.makeText(this, "No supplier phone number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getResources().getString(R.string.toast_message_no_supplier_number), Toast.LENGTH_SHORT).show();
         }
 
+        /*
+        try to load image for the product, if it don't have any, or there is problem with getching it,
+        display generic image, set in layout
+        */
         try {
             AsyncImageLoadingTask loadImageTask = new AsyncImageLoadingTask();
             loadImageTask.execute(Uri.parse(productImageUriString));
@@ -202,6 +230,7 @@ public class ProductDetailsActivity extends AppCompatActivity {
         }
     }
 
+    // inner class used to asynchronous loading of the image (and scaling it down to fit in the View)
     private class AsyncImageLoadingTask extends AsyncTask<Uri, Void, Bitmap> {
         @Override
         protected Bitmap doInBackground(Uri... uris) {
@@ -229,6 +258,11 @@ public class ProductDetailsActivity extends AppCompatActivity {
             Bitmap scaled = null;
 
             try {
+
+                /*
+                get Bitmap from Uri, and scale it correctly, both if its wider than taller, and
+                taller than wider
+                */
                 Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 int imageHeight = imageBitmap.getHeight();
                 int imageWidth = imageBitmap.getWidth();
@@ -243,9 +277,8 @@ public class ProductDetailsActivity extends AppCompatActivity {
                     scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, newWidthHeight, false);
                 }
             }catch (IOException e){
-                Log.d("getBitmapFromUri", "problem loading image");
+                Log.d("getBitmapFromUri", "Problem loading image");
             }
-
             return scaled;
         }
     }

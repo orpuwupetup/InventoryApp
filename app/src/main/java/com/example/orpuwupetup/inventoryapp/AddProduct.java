@@ -34,6 +34,7 @@ import java.io.InputStream;
 
 public class AddProduct extends AppCompatActivity {
 
+    /** Global variables and constants */
     EditText productName, price, quantity, suplierPhoneNumber, suplierName, description;
     Uri productUri;
     ImageButton changeImage;
@@ -45,14 +46,10 @@ public class AddProduct extends AppCompatActivity {
     private boolean pictureWasPicked, productWasChanged;
     private int currentActivity;
 
-
-    // TODO: Change so that on up button click, user will be send to the Details
-    // TODO: Activity (if he is in the EditProduct Activity) and to Main if he is in AddProductActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_product);
-
 
         // find all TextViews associated with adding new product
         productName = findViewById(R.id.product_name);
@@ -64,8 +61,10 @@ public class AddProduct extends AppCompatActivity {
         changeImage = findViewById(R.id.change_image_button);
         productImage = findViewById(R.id.product_image);
 
-
-        // find floating button and set onClickListener on it
+        /*
+        find floating button and set onClickListener on it to save product to the list (or update
+        its quantity if its already in the table)
+        */
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,10 +78,10 @@ public class AddProduct extends AppCompatActivity {
         we are in AddProductActivity
         */
         try {
-            // we are in Edit details
             productUri = Uri.parse(getIntent().getExtras().getString("product_uri"));
-            this.setTitle("Edit product details");
 
+            // we are in Edit details, set correct title of the activity and set global variable for currentActivity
+            this.setTitle("Edit product details");
             currentActivity = EDIT_PRODUCT_ACTIVITY;
 
             // get details of the editing product and display them on screen
@@ -92,10 +91,16 @@ public class AddProduct extends AppCompatActivity {
                     null,
                     null,
                     null);
+
+            // we get just one product in cursor, so we can just go to the first element
             cursor.moveToFirst();
             productName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_NAME)));
+
+            // display price after converting it from cents to dollars
             String priceString = String.valueOf(0.01 * cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_PRICE)));
             price.setText(priceString);
+
+            // display all information about the product
             quantity.setText(String.valueOf(cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_QUANTITY))));
             suplierName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME)));
             suplierPhoneNumber.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER)));
@@ -103,36 +108,48 @@ public class AddProduct extends AppCompatActivity {
             if (!descriptionString.equals("No description...")) {
                 description.setText(descriptionString);
             }
-
             String currentImageUriString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING));
             if (!currentImageUriString.equals("") || !currentImageUriString.isEmpty()) {
 
+                // if this product has set image, display it asynchronously
                 AsyncImageLoadingTask asyncLoadTask = new AsyncImageLoadingTask();
                 asyncLoadTask.execute(Uri.parse(currentImageUriString));
             }
-
         } catch (NullPointerException e) {
             if (currentActivity != EDIT_PRODUCT_ACTIVITY) {
-                // we are in Add new product activity
+                // we are in Add new product activity so we don't have to load any information, just set tile
                 currentActivity = ADD_PRODUCT_ACTIVITY;
                 productUri = null;
                 this.setTitle("Add new product");
             }
         }
 
+        // set on click listener to choose image for the product
         changeImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent getImage;
 
+                // make new intent, accordingly to what Android version user has
                 if (Build.VERSION.SDK_INT < 19) {
                     getImage = new Intent(Intent.ACTION_GET_CONTENT);
                 } else {
+
+                    /*
+                    there is problem in Android versions up from KitKat, where apps don't keep
+                    permissions for displaying images, so I have to add flag with persistable permission
+                    to every image Uri that I've got
+                    */
                     getImage = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     getImage.addCategory(Intent.CATEGORY_OPENABLE);
                     getImage.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                     getImage.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                 }
+
+                /*
+                put Uri in intent extra for checking in which activity we currently are, and set this
+                intent to get all types of image extensions
+                */
                 getImage.putExtra("product_uri", productUri);
                 getImage.setType("image/*");
                 getImage.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
@@ -141,6 +158,10 @@ public class AddProduct extends AppCompatActivity {
             }
         });
 
+        /*
+        make on touch listener to listen for touching any of the Views associated with changing
+        product info, and if they were touched, change productWasChanged to true
+        */
         View.OnTouchListener mTouchListener = new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -148,7 +169,6 @@ public class AddProduct extends AppCompatActivity {
                 return false;
             }
         };
-
         changeImage.setOnTouchListener(mTouchListener);
         productName.setOnTouchListener(mTouchListener);
         price.setOnTouchListener(mTouchListener);
@@ -164,15 +184,14 @@ public class AddProduct extends AppCompatActivity {
 
         switch (requestCode) {
 
+            // after choosing image via FileManager:
             case PICK_IMAGE:
                 if (resultCode == RESULT_OK) {
-
                     try {
                         /*
-                        if the image we picked is correct, we can assign it to the ImageView (but
-                        not save it to the product yet)
+                        get permission for displaying the image (after device was restarted, and we
+                        want to display image from before the restart)
                         */
-
                         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                             final int takeFlags = data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION;
                             ContentResolver resolver = this.getContentResolver();
@@ -180,16 +199,18 @@ public class AddProduct extends AppCompatActivity {
                                 resolver.takePersistableUriPermission(data.getData(), takeFlags);
                             }
                         }
-
                         imageUriString = data.getData().toString();
 
+                        /*
+                        if the image we picked is correct, we can assign it to the ImageView (but
+                        not save it to the product yet)
+                        */
                         AsyncImageLoadingTask asyncLoadTask = new AsyncImageLoadingTask();
                         asyncLoadTask.execute(Uri.parse(imageUriString));
-
                         pictureWasPicked = true;
 
                     } catch (NullPointerException e) {
-                        Toast.makeText(this, "Problem fetching image", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getResources().getString(R.string.toast_message_problem_fetching_image), Toast.LENGTH_SHORT).show();
                         imageUriString = "";
                     }
                 }
@@ -220,6 +241,10 @@ public class AddProduct extends AppCompatActivity {
         String suplierNameString = suplierName.getText().toString();
         String descriptionString = description.getText().toString();
 
+        /*
+        make new ContentValues with all the product information that we got from user, to send it
+        via query to the ContentProvider
+        */
         ContentValues values = new ContentValues();
         values.put(InventoryEntry.COLUMN_PRODUCT_QUANTITY, productQuantity);
         values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME, suplierNameString);
@@ -238,54 +263,67 @@ public class AddProduct extends AppCompatActivity {
         */
         if (currentActivity == ADD_PRODUCT_ACTIVITY) {
 
+            /*
+            we have to make (grammatically correct) String, accordingly to which part of information user
+            is not yet providing, to tell it to him in the Toast message
+            */
             String whatIsMissing = "";
             int missingValues = 0;
-
             if (suplierNameString.equals("") || suplierNameString.isEmpty()) {
 
-                whatIsMissing = whatIsMissing + "supplier name";
+                whatIsMissing = whatIsMissing + getResources().getString(R.string.supplier_name_lower_case);
                 missingValues++;
             }
-
             if (productNameString.equals("") || productNameString.isEmpty()){
                 if (!whatIsMissing.equals("")){
-                    whatIsMissing = whatIsMissing + " and product name";
+                    whatIsMissing = whatIsMissing + " "+ getResources().getString(R.string.and_product_name);
                     missingValues++;
                 }else{
-                    whatIsMissing = whatIsMissing + "product name";
+                    whatIsMissing = whatIsMissing + getResources().getString(R.string.product_name_lower_case);
                 }
             }
-
             if (productPriceInt == 0){
                 if (!whatIsMissing.equals("")){
-                    whatIsMissing = whatIsMissing + " and product price";
+                    whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.and_product_price);
                     missingValues++;
                 }else{
-                    whatIsMissing = whatIsMissing + "product price";
+                    whatIsMissing = whatIsMissing + getResources().getString(R.string.product_price_lower_case);
                 }
             }
             if(missingValues == 3){
-                whatIsMissing = whatIsMissing.replaceFirst(" and", ",");
+                whatIsMissing = whatIsMissing.replaceFirst(" " + getResources().getString(R.string.and), ",");
             }
 
+            /*
+            make final instance of ContentValues (because we want to use it in the inner class, but
+            but don't change its values there)
+            */
             final ContentValues finalValues = values;
 
+            /*
+            if some information is missing, tell it to the user via Dialog, otherwise just insert
+            product to the table
+            */
             if(!whatIsMissing.equals("")) {
 
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage("Do you want to add product without " + whatIsMissing + "?");
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                builder.setMessage(getResources().getString(R.string.add_product_without_something_dialog_question) + whatIsMissing + "?");
+                builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+
                         // User clicked the "Yes" button, so add the product without those values.
                         getContentResolver().insert(InventoryEntry.CONTENT_URI, finalValues);
                         finish();
                     }
                 });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // User clicked the "Cancel" button, so dismiss the dialog
-                        // and continue editing the product.
+
+                        /*
+                        User clicked the "Cancel" button, so dismiss the dialog
+                        and continue editing the product.
+                        */
                         if (dialog != null) {
                             dialog.dismiss();
                         }
@@ -300,18 +338,26 @@ public class AddProduct extends AppCompatActivity {
                 finish();
             }
 
+            /*
+            if we are in EditDetails activity, either update the product, or say to the user that nothing
+            has changed
+            */
         } else {
 
             if(productWasChanged) {
                 getContentResolver().update(productUri, values, null, null);
-                Toast.makeText(this, "Product details updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getResources().getString(R.string.toast_message_details_updated), Toast.LENGTH_SHORT).show();
             }else{
-                Toast.makeText(this, "No info was updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getResources().getString(R.string.toast_message_no_info_updated), Toast.LENGTH_SHORT).show();
             }
             finish();
         }
     }
 
+    /*
+    if info changed, and user clicks back button, ask him for confirmation of discarding of provided
+    changes, else just do what back button usually does
+    */
     @Override
     public void onBackPressed() {
         if(!productWasChanged) {
@@ -323,34 +369,46 @@ public class AddProduct extends AppCompatActivity {
 
     }
 
+    /*
+    if user clicks back button from AddProductActivity, send him to inventory, if he is in
+    EditProductActivity, send him to details of the product being edited (or ask him for discard
+    confirmation, if changes were provided)
+    */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()){
             case android.R.id.home:
-                if(currentActivity == ADD_PRODUCT_ACTIVITY){
-                    NavUtils.navigateUpFromSameTask(AddProduct.this);
+                if(!productWasChanged) {
+                    if (currentActivity == ADD_PRODUCT_ACTIVITY) {
+                        NavUtils.navigateUpFromSameTask(AddProduct.this);
+                    } else {
+                        finish();
+                    }
                 }else{
-                    finish();
+                    showDiscardChangesConfirmationDialog();
                 }
                 break;
         }
         return true;
     }
 
+    // display dialog to discard changes, or cancel discardment
     private void showDiscardChangesConfirmationDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Do you want to discard changes?");
-        builder.setPositiveButton("Discard", new DialogInterface.OnClickListener() {
+        builder.setMessage(getResources().getString(R.string.discard_confirmation_dialog_question));
+        builder.setPositiveButton(getResources().getString(R.string.discard), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Delete" button, so delete the pet.
+                // User clicked the "Discard" button, so discard the changes.
                 finish();
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Cancel" button, so dismiss the dialog
-                // and continue editing the pet.
+                /*
+                User clicked the "Cancel" button, so dismiss the dialog
+                and continue editing the product.
+                */
                 if (dialog != null) {
                     dialog.dismiss();
                 }
@@ -362,14 +420,16 @@ public class AddProduct extends AppCompatActivity {
         alertDialog.show();
     }
 
-
+    /*
+    Inner class extending AsyncTask, used for loading image 'in the background' and display it
+    after load is completed
+    */
     private class AsyncImageLoadingTask extends AsyncTask<Uri, Void, Bitmap>{
         @Override
         protected Bitmap doInBackground(Uri... uris) {
             if(uris[0] == null || uris.length == 0){
                 return null;
             }
-
             return getBitmapFromUri(uris[0]);
         }
 
@@ -382,6 +442,7 @@ public class AddProduct extends AppCompatActivity {
             }
         }
 
+        // get image from the image Uri and scale it down to fit in the boarders of the ImageView
         private Bitmap getBitmapFromUri(Uri uri) {
 
             if (uri == null || uri.toString().isEmpty()) {
@@ -394,7 +455,6 @@ public class AddProduct extends AppCompatActivity {
                 Bitmap imageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 int imageHeight = imageBitmap.getHeight();
                 int imageWidth = imageBitmap.getWidth();
-
                 int newWidthHeight = (int) getResources().getDimension(R.dimen.image_width_and_height);
 
                 if (imageHeight < imageWidth) {
@@ -407,7 +467,6 @@ public class AddProduct extends AppCompatActivity {
             }catch (IOException e){
                 Log.d("getBitmapFromUri", "problem loading image");
             }
-
             return scaled;
         }
     }

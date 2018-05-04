@@ -28,7 +28,7 @@ import com.example.orpuwupetup.inventoryapp.data.InventoryDbHelper;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
-    private ListView productsList;
+    /** Global variables */
     private ProductCursorAdapter adapter;
 
     // TODO: Make app pretty
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
 
         // find list view for displaying products
-        productsList = findViewById(R.id.list);
+        ListView productsList = findViewById(R.id.list);
 
         //Find floating action button, and set intent on it to open AddProduct Activity
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -71,13 +71,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         productsList.setAdapter(adapter);
         getLoaderManager().initLoader(1, null, this);
 
+        /*
+        set onClickListener so that clicking on the item from the list will send user to the Activity
+        with details of the clicked product
+        */
         productsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 // create URI for clicked pet
                 Uri productUri = Uri.withAppendedPath(InventoryEntry.CONTENT_URI, String.valueOf(id));
-
                 Intent openDetails = new Intent(MainActivity.this, ProductDetailsActivity.class);
                 openDetails.putExtra("product_uri", productUri.toString());
                 startActivity(openDetails);
@@ -98,21 +101,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         // User clicked on a menu option in the app bar overflow menu
         switch (item.getItemId()) {
+
             // Respond to a click on the "Delete all products" menu option
             case R.id.action_delete_all_entries:
                 deleteThis();
-                Toast.makeText(this, "All products deleted from the list", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getResources().getString(R.string.toast_message_all_items_deleted), Toast.LENGTH_SHORT).show();
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    // method for deleting all products from the list
     private void deleteThis(){
         getContentResolver().delete(InventoryEntry.CONTENT_URI, null, null);
     }
 
+    // methods associated with creating CursorLoader object, and using it to fill the products list
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 

@@ -212,7 +212,8 @@ public class ProductProvider extends ContentProvider{
 
                 /* update table with new value of quantity of the product (if its different than 0) */
                 if(Integer.parseInt(contentValues.getAsString(InventoryEntry.COLUMN_PRODUCT_QUANTITY)) != 0) {
-                    db.update(InventoryEntry.TABLE_NAME, updatedQuantity, InventoryEntry.COLUMN_PRODUCT_NAME + "=?", whereClause);
+                    db.update(InventoryEntry.TABLE_NAME, updatedQuantity, InventoryEntry.COLUMN_PRODUCT_NAME
+                            + "=?", whereClause);
 
                     // close cursor and tell user quantity of what was updated and by how much
                     cursor.close();
@@ -222,17 +223,21 @@ public class ProductProvider extends ContentProvider{
 
                     // notify that data in the database has been changed
                     wasInserted = true;
-                    // TODO: Extract all string to the R.Strings
                 }else{
-                    Toast.makeText(getContext(), whereClause[0] + " was already added to the table.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), whereClause[0] + " "
+                            + getContext().getResources().getString(R.string.toast_message_product_already_in_table),
+                            Toast.LENGTH_SHORT).show();
                 }
             } catch (CursorIndexOutOfBoundsException e) {
-                Toast.makeText(getContext(), "Problem with adding product", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(),
+                        getContext().getResources().getString(R.string.toast_message_problem_with_adding_to_table),
+                        Toast.LENGTH_LONG).show();
             }
         } else {
 
             // If newRowId is different than -1, the insertion was successful and we can display a toast with the row ID.
-            Toast.makeText(getContext(), "Product saved to the table", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getContext().getResources().getString(R.string.toast_message_product_saved),
+                    Toast.LENGTH_SHORT).show();
 
             // notify that data in the database has been changed
             wasInserted = true;
