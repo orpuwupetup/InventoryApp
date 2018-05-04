@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +31,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     /** Global variables */
     private ProductCursorAdapter adapter;
+    private ImageView emptyView;
 
     // TODO: Make app pretty
-        // TODO: Add icons to floating buttons
         // TODO: Add animation to floating buttons
+        // TODO: Add icons to floating buttons
         // TODO: Change font colors in the main list
         // TODO: Change font colors in the details activity
         // TODO: Add emptyView to the main list
@@ -43,19 +45,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             // TODO: Choosing Image
             // TODO: Sale and increment and decrement of quantity
 
-
-    // TODO: Add comments and clean the code
-        // TODO: Exctract Strings resources
-        // TODO: Clean code of unused methods and white spaces
-        // TODO: Add more comments in correct places
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // find list view for displaying products
+        // find list view for displaying products (and its empty view)
         ListView productsList = findViewById(R.id.list);
+        emptyView = findViewById(R.id.empty_list_view);
+        productsList.setEmptyView(emptyView);
+
+
 
         //Find floating action button, and set intent on it to open AddProduct Activity
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -137,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
         adapter.swapCursor(data);
+        emptyView.setBackgroundResource(R.drawable.empty_carton_box);
+
     }
 
     @Override
