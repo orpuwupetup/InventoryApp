@@ -5,14 +5,18 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,7 +30,11 @@ import android.widget.Toast;
 
 import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntry;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 public class AddProduct extends AppCompatActivity {
 
@@ -41,6 +49,11 @@ public class AddProduct extends AppCompatActivity {
     final static private int EDIT_PRODUCT_ACTIVITY = 5;
     private boolean pictureWasPicked, productWasChanged;
     private int currentActivity;
+
+
+    private final static int TAKE_PICTURE = 1;
+    Uri photoPath;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,33 +138,29 @@ public class AddProduct extends AppCompatActivity {
         chooseImageFromCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent getImage;
 
-                // make new intent, accordingly to what Android version user has
-                if (Build.VERSION.SDK_INT < 19) {
-                    getImage = new Intent(Intent.ACTION_GET_CONTENT);
-                } else {
+                if (hasCamera() && hasDefualtCameraApp(MediaStore.ACTION_IMAGE_CAPTURE)) {
 
-                    /*
-                    there is problem in Android versions up from KitKat, where apps don't keep
-                    permissions for displaying images, so I have to add flag with persistable permission
-                    to every image Uri that I've got
-                    */
-                    getImage = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    getImage.addCategory(Intent.CATEGORY_OPENABLE);
-                    getImage.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                    getImage.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    // Ensure that there's a camera activity to handle the intent
+                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        // Create the File where the photo should go
+                        File photoFile = null;
+                        try {
+                            photoFile = createImageFile();
+                        } catch (IOException ex) {
+                            // Error occurred while creating the File
+                        }
+                        // Continue only if the File was successfully created
+                        if (photoFile != null) {
+                            photoPath = FileProvider.getUriForFile(AddProduct.this,
+                                    "com.example.android.fileprovider",
+                                    photoFile);
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoPath);
+                            startActivityForResult(takePictureIntent, TAKE_PICTURE);
+                        }
+                    }
                 }
-
-                /*
-                put Uri in intent extra for checking in which activity we currently are, and set this
-                intent to get all types of image extensions
-                */
-                getImage.putExtra("product_uri", productUri);
-                getImage.setType("image/*");
-                getImage.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                getImage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivityForResult(Intent.createChooser(getImage, "Select Picture"), PICK_IMAGE);
             }
         });
         
@@ -201,12 +210,52 @@ public class AddProduct extends AppCompatActivity {
             }
         };
         chooseImageFromGallery.setOnTouchListener(mTouchListener);
+        chooseImageFromCamera.setOnTouchListener(mTouchListener);
         productName.setOnTouchListener(mTouchListener);
         price.setOnTouchListener(mTouchListener);
         quantity.setOnTouchListener(mTouchListener);
         description.setOnTouchListener(mTouchListener);
         suplierPhoneNumber.setOnTouchListener(mTouchListener);
         suplierName.setOnTouchListener(mTouchListener);
+    }
+
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(photoPath.toString());
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        photoPath = Uri.parse(image.getAbsolutePath());
+        return image;
+    }
+
+    // method to check if you have a Camera
+    private boolean hasCamera(){
+        return getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
+    // method to check you have Camera Apps
+    private boolean hasDefualtCameraApp(String action){
+        final PackageManager packageManager = getPackageManager();
+        final Intent intent = new Intent(action);
+        List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+
+        return list.size() > 0;
+
     }
 
     @Override
@@ -231,6 +280,7 @@ public class AddProduct extends AppCompatActivity {
                             }
                         }
                         imageUriString = data.getData().toString();
+                        Log.d("imageUrifromgallery", imageUriString);
 
                         /*
                         if the image we picked is correct, we can assign it to the ImageView (but
@@ -245,6 +295,22 @@ public class AddProduct extends AppCompatActivity {
                         imageUriString = "";
                     }
                 }
+                break;
+            case TAKE_PICTURE:
+                if (resultCode == RESULT_OK){
+
+
+                    Log.e("URI", photoPath.toString());
+                    galleryAddPic();
+
+                    AsyncImageLoadingTask asyncLoadTask = new AsyncImageLoadingTask();
+                    asyncLoadTask.execute(photoPath);
+
+                    imageUriString = photoPath.toString();
+                    galleryAddPic();
+                    pictureWasPicked = true;
+        }
+
         }
     }
 
@@ -480,6 +546,7 @@ public class AddProduct extends AppCompatActivity {
                 return null;
             }
 
+            Log.d("getbitmapfromuri", uri.toString());
             Bitmap scaled = null;
 
             try {
