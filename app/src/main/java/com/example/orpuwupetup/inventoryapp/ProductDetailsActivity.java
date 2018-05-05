@@ -14,6 +14,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -61,22 +63,37 @@ public class ProductDetailsActivity extends AppCompatActivity {
         incrementQuantity = findViewById(R.id.increment_quantity);
         decrementQuantity = findViewById(R.id.decrement_quantity);
         ImageButton dialSuplierButton = findViewById(R.id.call_suplier_button);
-        FloatingActionButton fab = findViewById(R.id.fab);
+        final FloatingActionButton fab = findViewById(R.id.fab);
         final FloatingActionButton deleteProductFab = findViewById(R.id.delete_product_fab);
         final FloatingActionButton editProductFab = findViewById(R.id.edit_product_fab);
 
+        // add animations for the opening and closing of floating action buttons
+        final Animation fabOpen = AnimationUtils.loadAnimation(this, R.anim.fab_open);
+        final Animation fabClose = AnimationUtils.loadAnimation(this, R.anim.fab_close);
+        final Animation editProductFabOpen = AnimationUtils.loadAnimation(this, R.anim.edit_product_fab_open);
+        final Animation editProductFabClose = AnimationUtils.loadAnimation(this, R.anim.edit_product_fab_close);
+        final Animation deleteProductFabOpen = AnimationUtils.loadAnimation(this, R.anim.delete_product_fab_open);
+        final Animation deleteProductFabClose = AnimationUtils.loadAnimation(this, R.anim.delete_product_fab_close);
+
         // set on click listener to expand or contract "floating menu"
-        // TODO: Set animation for the 2 fab buttons
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!isFabClicked){
                     deleteProductFab.setVisibility(View.VISIBLE);
                     editProductFab.setVisibility(View.VISIBLE);
+
+                    deleteProductFab.startAnimation(deleteProductFabOpen);
+                    editProductFab.startAnimation(editProductFabOpen);
+                    fab.startAnimation(fabOpen);
                     isFabClicked = true;
                 }else{
+                    deleteProductFab.startAnimation(deleteProductFabClose);
                     deleteProductFab.setVisibility(View.GONE);
+
+                    editProductFab.startAnimation(editProductFabClose);
                     editProductFab.setVisibility(View.GONE);
+                    fab.startAnimation(fabClose);
                     isFabClicked = false;
                 }
             }
@@ -86,8 +103,6 @@ public class ProductDetailsActivity extends AppCompatActivity {
         deleteProductFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Add dialog to ask user if he wants to really delete the product or not
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(ProductDetailsActivity.this);
                 builder.setMessage(getResources().getString(R.string.delete_product_dialog_message));
                 builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
@@ -164,7 +179,6 @@ public class ProductDetailsActivity extends AppCompatActivity {
                 changeQuantity(DECREMENT_QUANTITY);
             }
         });
-
     }
 
     /*

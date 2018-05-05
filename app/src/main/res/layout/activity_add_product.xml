@@ -97,13 +97,25 @@
         app:layout_constraintEnd_toEndOf="@id/product_image"
         />
     <ImageButton
-        android:id="@+id/change_image_button"
+        android:id="@+id/choose_image_from_gallery"
         android:layout_width="80dp"
         android:layout_height="80dp"
         app:layout_constraintTop_toTopOf="@id/product_image"
         app:layout_constraintBottom_toBottomOf="@id/product_image"
         app:layout_constraintStart_toStartOf="@id/product_image"
-        app:layout_constraintEnd_toEndOf="@id/product_image"/>
+        app:layout_constraintEnd_toEndOf="@id/product_image"
+        app:layout_constraintHorizontal_bias="0.1"/>
+
+    <ImageButton
+        android:id="@+id/choose_image_from_camera"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        app:layout_constraintTop_toTopOf="@id/product_image"
+        app:layout_constraintBottom_toBottomOf="@id/product_image"
+        app:layout_constraintStart_toStartOf="@id/product_image"
+        app:layout_constraintEnd_toEndOf="@id/product_image"
+        android:src="@drawable/ic_details_left_arrow"
+        app:layout_constraintHorizontal_bias="0.9"/>
 
     <ImageView
         android:layout_width="0dp"
@@ -222,7 +234,6 @@
         android:background="@color/colorPrimaryDark"
         app:layout_constraintBottom_toTopOf="@id/description_edit_text"/>
 
-    <!--TODO: change color of the floating button and add icon to it-->
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="80dp"
@@ -231,6 +242,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginRight="30dp"
         android:layout_marginEnd="30dp"
+        android:src="@drawable/ic_save"
         android:layout_marginBottom="50dp"
         />
 

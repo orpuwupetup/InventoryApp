@@ -1,14 +1,12 @@
 package com.example.orpuwupetup.inventoryapp;
 
 import android.app.AlertDialog;
-import android.app.LoaderManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -28,16 +26,14 @@ import android.widget.Toast;
 
 import com.example.orpuwupetup.inventoryapp.data.InventoryContract.InventoryEntry;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class AddProduct extends AppCompatActivity {
 
     /** Global variables and constants */
     EditText productName, price, quantity, suplierPhoneNumber, suplierName, description;
     Uri productUri;
-    ImageButton changeImage;
+    ImageButton chooseImageFromGallery, chooseImageFromCamera;
     String imageUriString;
     ImageView productImage;
     final private static int PICK_IMAGE = 0;
@@ -58,7 +54,8 @@ public class AddProduct extends AppCompatActivity {
         suplierPhoneNumber = findViewById(R.id.phone_number_edit_text);
         suplierName = findViewById(R.id.suplier_name_edit_text);
         description = findViewById(R.id.description_edit_text);
-        changeImage = findViewById(R.id.change_image_button);
+        chooseImageFromGallery = findViewById(R.id.choose_image_from_gallery);
+        chooseImageFromCamera = findViewById(R.id.choose_image_from_camera);
         productImage = findViewById(R.id.product_image);
 
         /*
@@ -124,8 +121,42 @@ public class AddProduct extends AppCompatActivity {
             }
         }
 
-        // set on click listener to choose image for the product
-        changeImage.setOnClickListener(new View.OnClickListener() {
+        // set on click listener to choose image for the product from camera
+        chooseImageFromCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent getImage;
+
+                // make new intent, accordingly to what Android version user has
+                if (Build.VERSION.SDK_INT < 19) {
+                    getImage = new Intent(Intent.ACTION_GET_CONTENT);
+                } else {
+
+                    /*
+                    there is problem in Android versions up from KitKat, where apps don't keep
+                    permissions for displaying images, so I have to add flag with persistable permission
+                    to every image Uri that I've got
+                    */
+                    getImage = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    getImage.addCategory(Intent.CATEGORY_OPENABLE);
+                    getImage.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    getImage.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                }
+
+                /*
+                put Uri in intent extra for checking in which activity we currently are, and set this
+                intent to get all types of image extensions
+                */
+                getImage.putExtra("product_uri", productUri);
+                getImage.setType("image/*");
+                getImage.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                getImage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivityForResult(Intent.createChooser(getImage, "Select Picture"), PICK_IMAGE);
+            }
+        });
+        
+        // set on click listener to choose image for the product from gallery
+        chooseImageFromGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent getImage;
@@ -169,7 +200,7 @@ public class AddProduct extends AppCompatActivity {
                 return false;
             }
         };
-        changeImage.setOnTouchListener(mTouchListener);
+        chooseImageFromGallery.setOnTouchListener(mTouchListener);
         productName.setOnTouchListener(mTouchListener);
         price.setOnTouchListener(mTouchListener);
         quantity.setOnTouchListener(mTouchListener);
