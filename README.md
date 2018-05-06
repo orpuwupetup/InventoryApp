@@ -3,7 +3,7 @@
 <img src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/parcel_icon_small.png" width=400>
 </p>
 <p align="center">
-Mobile pplication for inventory management (with SQL database)
+Mobile application for inventory management (with SQL database)
 </p>
 
 <p>
