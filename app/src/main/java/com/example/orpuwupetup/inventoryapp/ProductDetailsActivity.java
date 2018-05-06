@@ -45,6 +45,9 @@ public class ProductDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_details);
 
+        // set title of the activity
+        this.setTitle(getResources().getString(R.string.product_details_title));
+
         // try to fetch Uri of the product from the intent, we get at the start of Activity
         try {
             productUri = Uri.parse(getIntent().getExtras().getString(PRODUCT_URI_KEY));
@@ -86,14 +89,16 @@ public class ProductDetailsActivity extends AppCompatActivity {
                     deleteProductFab.startAnimation(deleteProductFabOpen);
                     editProductFab.startAnimation(editProductFabOpen);
                     fab.startAnimation(fabOpen);
+
                     isFabClicked = true;
                 }else{
-                    deleteProductFab.startAnimation(deleteProductFabClose);
-                    deleteProductFab.setVisibility(View.GONE);
-
                     editProductFab.startAnimation(editProductFabClose);
-                    editProductFab.setVisibility(View.GONE);
+                    deleteProductFab.startAnimation(deleteProductFabClose);
                     fab.startAnimation(fabClose);
+
+                    deleteProductFab.setVisibility(View.GONE);
+                    editProductFab.setVisibility(View.GONE);
+
                     isFabClicked = false;
                 }
             }
@@ -129,8 +134,6 @@ public class ProductDetailsActivity extends AppCompatActivity {
                 // Create and show the AlertDialog
                 AlertDialog alertDialog = builder.create();
                 alertDialog.show();
-
-
             }
         });
         editProductFab.setOnClickListener(new View.OnClickListener() {

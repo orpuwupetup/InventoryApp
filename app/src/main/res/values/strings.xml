@@ -36,4 +36,6 @@
     <string name="toast_message_invalid_supplier_number">Invalid supplier phone number</string>
     <string name="toast_message_no_supplier_number">No supplier phone number</string>
     <string name="delete_product_dialog_message">Do you really want to delete this product?</string>
+    <string name="toast_message_no_camera_hardware_or_software">No camera and/or camera app available</string>
+    <string name="product_details_title">Product details</string>
 </resources>

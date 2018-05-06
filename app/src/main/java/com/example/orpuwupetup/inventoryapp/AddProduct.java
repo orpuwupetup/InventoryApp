@@ -23,6 +23,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -35,25 +37,25 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AddProduct extends AppCompatActivity {
 
-    /** Global variables and constants */
-    EditText productName, price, quantity, suplierPhoneNumber, suplierName, description;
-    Uri productUri;
-    ImageButton chooseImageFromGallery, chooseImageFromCamera;
-    String imageUriString;
-    ImageView productImage;
     final private static int PICK_IMAGE = 0;
     final static private int ADD_PRODUCT_ACTIVITY = 3;
     final static private int EDIT_PRODUCT_ACTIVITY = 5;
-    private boolean pictureWasPicked, productWasChanged;
-    private int currentActivity;
-
-
     private final static int TAKE_PICTURE = 1;
+    /**
+     * Global variables and constants
+     */
+    EditText productName, price, quantity, suplierPhoneNumber, suplierName, description;
+    Uri productUri;
+    ImageButton chooseImageFromGallery, chooseImageFromCamera, chooseImageSrc, closeImageOptions;
+    String imageUriString;
+    ImageView productImage;
     Uri photoPath;
-
+    private boolean pictureWasPicked, productWasChanged, imageSrcOptionsOpen;
+    private int currentActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +72,8 @@ public class AddProduct extends AppCompatActivity {
         chooseImageFromGallery = findViewById(R.id.choose_image_from_gallery);
         chooseImageFromCamera = findViewById(R.id.choose_image_from_camera);
         productImage = findViewById(R.id.product_image);
+        chooseImageSrc = findViewById(R.id.choose_image_source);
+        closeImageOptions = findViewById(R.id.close_image_options);
 
         /*
         find floating button and set onClickListener on it to save product to the list (or update
@@ -134,13 +138,66 @@ public class AddProduct extends AppCompatActivity {
             }
         }
 
+        imageSrcOptionsOpen = false;
+        final Animation cameraButtonOpen = AnimationUtils.loadAnimation(this, R.anim.image_from_camera_open);
+        final Animation galleryButtonOpen = AnimationUtils.loadAnimation(this, R.anim.image_from_gallery_open);
+        final Animation cameraButtonClose = AnimationUtils.loadAnimation(this, R.anim.image_from_camera_close);
+        final Animation galleryButtonClose = AnimationUtils.loadAnimation(this, R.anim.image_from_gallery_close);
+        final Animation chooseImageSrcOpen = AnimationUtils.loadAnimation(this, R.anim.choose_image_src_button_open);
+        final Animation chooseImageSrcClose = AnimationUtils.loadAnimation(this, R.anim.choose_image_src_button_close);
+
+        /*
+        set on click listener on chooseImageSrc button to show options for sources from which we
+        can choose
+        */
+        chooseImageSrc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!imageSrcOptionsOpen){
+
+                    chooseImageSrc.startAnimation(chooseImageSrcClose);
+                    chooseImageFromCamera.startAnimation(cameraButtonOpen);
+                    chooseImageFromGallery.startAnimation(galleryButtonOpen);
+                    closeImageOptions.startAnimation(chooseImageSrcOpen);
+
+                    chooseImageFromGallery.setVisibility(View.VISIBLE);
+                    chooseImageFromCamera.setVisibility(View.VISIBLE);
+                    closeImageOptions.setVisibility(View.VISIBLE);
+                    chooseImageSrc.setVisibility(View.GONE);
+
+                    imageSrcOptionsOpen = true;
+                }
+            }
+        });
+
+        // onClickListener for closing options for choosing image src
+        closeImageOptions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(imageSrcOptionsOpen){
+                    chooseImageFromGallery.startAnimation(galleryButtonClose);
+                    chooseImageFromCamera.startAnimation(cameraButtonClose);
+                    chooseImageSrc.startAnimation(chooseImageSrcOpen);
+                    closeImageOptions.startAnimation(chooseImageSrcClose);
+
+                    chooseImageFromCamera.setVisibility(View.GONE);
+                    chooseImageFromGallery.setVisibility(View.GONE);
+                    chooseImageSrc.setVisibility(View.VISIBLE);
+                    closeImageOptions.setVisibility(View.GONE);
+                    imageSrcOptionsOpen = false;
+                }
+            }
+        });
+
         // set on click listener to choose image for the product from camera
         chooseImageFromCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                // check if camera and/or any camera app is available
                 if (hasCamera() && hasDefualtCameraApp(MediaStore.ACTION_IMAGE_CAPTURE)) {
 
+                    // make intent for taking, and saving photo
                     Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     // Ensure that there's a camera activity to handle the intent
                     if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -160,10 +217,13 @@ public class AddProduct extends AppCompatActivity {
                             startActivityForResult(takePictureIntent, TAKE_PICTURE);
                         }
                     }
+                } else {
+                    Toast.makeText(AddProduct.this, getResources().getString(R.string.toast_message_no_camera_hardware_or_software)
+                            , Toast.LENGTH_SHORT).show();
                 }
             }
         });
-        
+
         // set on click listener to choose image for the product from gallery
         chooseImageFromGallery.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -219,6 +279,7 @@ public class AddProduct extends AppCompatActivity {
         suplierName.setOnTouchListener(mTouchListener);
     }
 
+    // method for adding taken photo to the gallery to make it available for the other apps
     private void galleryAddPic() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         File f = new File(photoPath.toString());
@@ -227,9 +288,10 @@ public class AddProduct extends AppCompatActivity {
         this.sendBroadcast(mediaScanIntent);
     }
 
+    // method for creating new Image file from photo taken by camera
     private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
@@ -243,13 +305,13 @@ public class AddProduct extends AppCompatActivity {
         return image;
     }
 
-    // method to check if you have a Camera
-    private boolean hasCamera(){
+    // method to check if user have a Camera
+    private boolean hasCamera() {
         return getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
 
-    // method to check you have Camera Apps
-    private boolean hasDefualtCameraApp(String action){
+    // method to check user have Camera Apps
+    private boolean hasDefualtCameraApp(String action) {
         final PackageManager packageManager = getPackageManager();
         final Intent intent = new Intent(action);
         List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -272,10 +334,10 @@ public class AddProduct extends AppCompatActivity {
                         get permission for displaying the image (after device was restarted, and we
                         want to display image from before the restart)
                         */
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                             final int takeFlags = data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION;
                             ContentResolver resolver = this.getContentResolver();
-                            if(data.getData() != null) {
+                            if (data.getData() != null) {
                                 resolver.takePersistableUriPermission(data.getData(), takeFlags);
                             }
                         }
@@ -296,21 +358,22 @@ public class AddProduct extends AppCompatActivity {
                     }
                 }
                 break;
+
+            /*
+            if we taken picture with device camera, show it in the ImageView, and set imageUriString
+            of the product
+            */
             case TAKE_PICTURE:
-                if (resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
 
-
-                    Log.e("URI", photoPath.toString());
                     galleryAddPic();
-
                     AsyncImageLoadingTask asyncLoadTask = new AsyncImageLoadingTask();
                     asyncLoadTask.execute(photoPath);
-
                     imageUriString = photoPath.toString();
                     galleryAddPic();
                     pictureWasPicked = true;
-        }
-
+                }
+                break;
         }
     }
 
@@ -350,7 +413,7 @@ public class AddProduct extends AppCompatActivity {
         values.put(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER, suplierPhoneNumberString);
         values.put(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION, descriptionString);
 
-        if(pictureWasPicked) {
+        if (pictureWasPicked) {
             values.put(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING, imageUriString);
         }
 
@@ -371,23 +434,23 @@ public class AddProduct extends AppCompatActivity {
                 whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.supplier_name_lower_case);
                 missingValues++;
             }
-            if (productNameString.equals("") || productNameString.isEmpty()){
-                if (!whatIsMissing.equals("")){
-                    whatIsMissing = whatIsMissing + " "+ getResources().getString(R.string.and_product_name);
+            if (productNameString.equals("") || productNameString.isEmpty()) {
+                if (!whatIsMissing.equals("")) {
+                    whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.and_product_name);
                     missingValues++;
-                }else{
+                } else {
                     whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_name_lower_case);
                 }
             }
-            if (productPriceInt == 0){
-                if (!whatIsMissing.equals("")){
+            if (productPriceInt == 0) {
+                if (!whatIsMissing.equals("")) {
                     whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.and_product_price);
                     missingValues++;
-                }else{
+                } else {
                     whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_price_lower_case);
                 }
             }
-            if(missingValues == 3){
+            if (missingValues == 3) {
                 whatIsMissing = whatIsMissing.replaceFirst(" " + getResources().getString(R.string.and), ",");
             }
 
@@ -401,7 +464,7 @@ public class AddProduct extends AppCompatActivity {
             if some information is missing, tell it to the user via Dialog, otherwise just insert
             product to the table
             */
-            if(!whatIsMissing.equals("")) {
+            if (!whatIsMissing.equals("")) {
 
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -430,7 +493,7 @@ public class AddProduct extends AppCompatActivity {
                 // Create and show the AlertDialog
                 AlertDialog alertDialog = builder.create();
                 alertDialog.show();
-            }else{
+            } else {
                 getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
                 finish();
             }
@@ -441,10 +504,10 @@ public class AddProduct extends AppCompatActivity {
             */
         } else {
 
-            if(productWasChanged) {
+            if (productWasChanged) {
                 getContentResolver().update(productUri, values, null, null);
                 Toast.makeText(this, getResources().getString(R.string.toast_message_details_updated), Toast.LENGTH_SHORT).show();
-            }else{
+            } else {
                 Toast.makeText(this, getResources().getString(R.string.toast_message_no_info_updated), Toast.LENGTH_SHORT).show();
             }
             finish();
@@ -457,7 +520,7 @@ public class AddProduct extends AppCompatActivity {
     */
     @Override
     public void onBackPressed() {
-        if(!productWasChanged) {
+        if (!productWasChanged) {
             super.onBackPressed();
             return;
         }
@@ -474,15 +537,15 @@ public class AddProduct extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
-                if(!productWasChanged) {
+                if (!productWasChanged) {
                     if (currentActivity == ADD_PRODUCT_ACTIVITY) {
                         NavUtils.navigateUpFromSameTask(AddProduct.this);
                     } else {
                         finish();
                     }
-                }else{
+                } else {
                     showDiscardChangesConfirmationDialog();
                 }
                 break;
@@ -491,7 +554,7 @@ public class AddProduct extends AppCompatActivity {
     }
 
     // display dialog to discard changes, or cancel discardment
-    private void showDiscardChangesConfirmationDialog(){
+    private void showDiscardChangesConfirmationDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(getResources().getString(R.string.discard_confirmation_dialog_question));
         builder.setPositiveButton(getResources().getString(R.string.discard), new DialogInterface.OnClickListener() {
@@ -521,10 +584,10 @@ public class AddProduct extends AppCompatActivity {
     Inner class extending AsyncTask, used for loading image 'in the background' and display it
     after load is completed
     */
-    private class AsyncImageLoadingTask extends AsyncTask<Uri, Void, Bitmap>{
+    private class AsyncImageLoadingTask extends AsyncTask<Uri, Void, Bitmap> {
         @Override
         protected Bitmap doInBackground(Uri... uris) {
-            if(uris[0] == null || uris.length == 0){
+            if (uris[0] == null || uris.length == 0) {
                 return null;
             }
             return getBitmapFromUri(uris[0]);
@@ -562,7 +625,7 @@ public class AddProduct extends AppCompatActivity {
                 } else {
                     scaled = Bitmap.createScaledBitmap(imageBitmap, newWidthHeight, newWidthHeight, false);
                 }
-            }catch (IOException e){
+            } catch (IOException e) {
                 Log.d("getBitmapFromUri", "problem loading image");
             }
             return scaled;

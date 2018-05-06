@@ -97,25 +97,54 @@
         app:layout_constraintEnd_toEndOf="@id/product_image"
         />
     <ImageButton
+        android:visibility="gone"
         android:id="@+id/choose_image_from_gallery"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="60dp"
+        android:layout_height="70dp"
+        android:background="@drawable/image_from_gallery_button_background"
         app:layout_constraintTop_toTopOf="@id/product_image"
         app:layout_constraintBottom_toBottomOf="@id/product_image"
         app:layout_constraintStart_toStartOf="@id/product_image"
         app:layout_constraintEnd_toEndOf="@id/product_image"
-        app:layout_constraintHorizontal_bias="0.1"/>
+        android:src="@drawable/ic_folder_open"
+        app:layout_constraintHorizontal_bias="0.2"/>
 
     <ImageButton
+        android:visibility="gone"
         android:id="@+id/choose_image_from_camera"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="60dp"
+        android:layout_height="70dp"
         app:layout_constraintTop_toTopOf="@id/product_image"
+        android:background="@drawable/image_from_camera_button_background"
         app:layout_constraintBottom_toBottomOf="@id/product_image"
         app:layout_constraintStart_toStartOf="@id/product_image"
         app:layout_constraintEnd_toEndOf="@id/product_image"
-        android:src="@drawable/ic_details_left_arrow"
-        app:layout_constraintHorizontal_bias="0.9"/>
+        android:src="@drawable/ic_camera"
+        app:layout_constraintHorizontal_bias="0.8"/>
+
+    <ImageButton
+        android:id="@+id/choose_image_source"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:src="@drawable/ic_perm_media_black_24dp"
+        android:scaleType="center"
+        android:background="@drawable/image_src_button_background"
+        app:layout_constraintTop_toTopOf="@id/product_image"
+        app:layout_constraintBottom_toBottomOf="@id/product_image"
+        app:layout_constraintStart_toStartOf="@id/product_image"
+        app:layout_constraintEnd_toEndOf="@id/product_image"/>
+
+    <ImageButton
+        android:visibility="gone"
+        android:id="@+id/close_image_options"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:src="@drawable/ic_close_black_24dp"
+        android:background="@drawable/image_src_button_background"
+        app:layout_constraintStart_toStartOf="@id/product_image"
+        app:layout_constraintEnd_toEndOf="@id/product_image"
+        app:layout_constraintBottom_toBottomOf="@id/product_image"
+        android:layout_marginBottom="20dp"/>
 
     <ImageView
         android:layout_width="0dp"

@@ -37,10 +37,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // TODO: Change font colors in the main list
         // TODO: Change font colors in the details activity
         // TODO: Add default picture of the product
-        // TODO: maybe change layout of the Details activity a little (blue views under "price" and "quantity" headers? blue circle around productImage?)
         // TODO: Add icons to buttons
-            // TODO: Choosing Image
-            // TODO: Sale and increment and decrement of quantity
+            // TODO: Sale button
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
