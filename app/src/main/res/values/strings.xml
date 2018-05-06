@@ -38,4 +38,8 @@
     <string name="delete_product_dialog_message">Do you really want to delete this product?</string>
     <string name="toast_message_no_camera_hardware_or_software">No camera and/or camera app available</string>
     <string name="product_details_title">Product details</string>
+    <string name="no_product_name_info">No product name...</string>
+    <string name="no_supplier_number_info">No number...</string>
+    <string name="no_supplier_name_info">No name...</string>
+    <string name="no_description_info">No description...</string>
 </resources>

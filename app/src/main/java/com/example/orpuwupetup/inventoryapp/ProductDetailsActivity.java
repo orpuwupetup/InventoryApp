@@ -246,15 +246,47 @@ public class ProductDetailsActivity extends AppCompatActivity {
                 null);
         cursor.moveToFirst();
 
-        // extract all the information from provided cursor
-        productName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_NAME)));
+        /*
+        extract all the information from provided cursor, inform user with colors and informational
+        Strings that he haven't provided some values
+        */
+        String productNameString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_NAME));
+        productName.setTextColor(getResources().getColor(R.color.detailsValueColor));
+        if(productNameString.equals("") || productNameString.isEmpty()){
+            productNameString = getResources().getString(R.string.no_product_name_info);
+            productName.setTextColor(getResources().getColor(R.color.noStringRed));
+        }
+        productName.setText(productNameString);
         double priceValue = 0.01 * (cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_PRICE)));
+        if(priceValue == 0){
+            price.setTextColor(getResources().getColor(R.color.noStringRed));
+        }else{
+            price.setTextColor(getResources().getColor(R.color.detailsValueColor));
+        }
         String priceString = String.valueOf(priceValue) + " $";
         price.setText(priceString);
         quantity.setText(String.valueOf(cursor.getInt(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_QUANTITY))));
-        suplierPhoneNumber.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER)));
-        suplierName.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME)));
-        description.setText(cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION)));
+        String supplierPhoneNumberString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER));
+        if(supplierPhoneNumberString.isEmpty() || supplierPhoneNumberString.equals("")){
+            suplierPhoneNumber.setTextColor(getResources().getColor(R.color.noStringRed));
+            supplierPhoneNumberString = getResources().getString(R.string.no_supplier_number_info);
+        }else{
+            suplierPhoneNumber.setTextColor(getResources().getColor(R.color.white));
+        }
+        suplierPhoneNumber.setText(supplierPhoneNumberString);
+        String supplierNameString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME));
+        if(supplierNameString.equals("") || supplierNameString.isEmpty()){
+            supplierNameString = getResources().getString(R.string.no_supplier_name_info);
+            suplierName.setTextColor(getResources().getColor(R.color.noStringRed));
+        }else{
+            suplierName.setTextColor(getResources().getColor(R.color.white));
+        }
+        suplierName.setText(supplierNameString);
+        String descriptionString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_DESCRIPTION));
+        if(descriptionString.equals("") || descriptionString.isEmpty()){
+            descriptionString = getResources().getString(R.string.no_description_info);
+        }
+        description.setText(descriptionString);
         String productImageUriString = cursor.getString(cursor.getColumnIndex(InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING));
 
         // try to get phone number of products supplier, if there is non, tell it to the user

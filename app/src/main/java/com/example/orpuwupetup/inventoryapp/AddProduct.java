@@ -75,6 +75,9 @@ public class AddProduct extends AppCompatActivity {
         chooseImageSrc = findViewById(R.id.choose_image_source);
         closeImageOptions = findViewById(R.id.close_image_options);
 
+        // set default image
+        productImage.setBackgroundResource(R.drawable.no_image);
+
         /*
         find floating button and set onClickListener on it to save product to the list (or update
         its quantity if its already in the table)

@@ -34,11 +34,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private ImageView emptyView;
 
     // TODO: Make app pretty
-        // TODO: Change font colors in the main list
-        // TODO: Change font colors in the details activity
         // TODO: Add default picture of the product
-        // TODO: Add icons to buttons
-            // TODO: Sale button
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
         adapter.swapCursor(data);
-        emptyView.setBackgroundResource(R.drawable.empty_carton_box);
+        emptyView.setBackgroundResource(R.drawable.empty_carton_box_without_borders);
 
     }
 
