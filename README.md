@@ -22,7 +22,7 @@ which is sending the user to the AddNewProductActivity.
 
 ## AddProduct and EditProduct activities
 
-<img align="left" src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/saving_product_without_all_info_dialog.png" height=200> <img align="left" src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/add_new_product.png" height=200> <img align="left" src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/edit_product_with_expanded_options.png" height=200>
+<img align="left" src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/add_new_product.png" height=200> <img align="left" src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/edit_product_with_expanded_options.png" height=200>
 
 EditProductActivity and AddNewProductActivity are both build on single layout.xml file, becouse they are quite similar, both in look and in functionality.
 If user is in AddNewProduct activity (after clicking floating action button), all EditText views, are filled with default hints, specifying
