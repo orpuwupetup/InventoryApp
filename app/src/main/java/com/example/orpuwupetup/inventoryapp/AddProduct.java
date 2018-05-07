@@ -156,7 +156,7 @@ public class AddProduct extends AppCompatActivity {
         chooseImageSrc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!imageSrcOptionsOpen){
+                if (!imageSrcOptionsOpen) {
 
                     chooseImageSrc.startAnimation(chooseImageSrcClose);
                     chooseImageFromCamera.startAnimation(cameraButtonOpen);
@@ -177,7 +177,7 @@ public class AddProduct extends AppCompatActivity {
         closeImageOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(imageSrcOptionsOpen){
+                if (imageSrcOptionsOpen) {
                     chooseImageFromGallery.startAnimation(galleryButtonClose);
                     chooseImageFromCamera.startAnimation(cameraButtonClose);
                     chooseImageSrc.startAnimation(chooseImageSrcOpen);
@@ -421,99 +421,87 @@ public class AddProduct extends AppCompatActivity {
         }
 
         /*
-        if we are in AddProductActivity, add new product, if we are in EditProductActivity, update
-        old product
+        we have to make (grammatically correct) String, accordingly to which part of information user
+        is not yet providing, to tell it to him in the Toast message
         */
-        if (currentActivity == ADD_PRODUCT_ACTIVITY) {
-
-            /*
-            we have to make (grammatically correct) String, accordingly to which part of information user
-            is not yet providing, to tell it to him in the Toast message
-            */
-            String whatIsMissing = "";
-            int missingValues = 0;
-            if (suplierNameString.equals("") || suplierNameString.isEmpty()) {
-
-                whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.supplier_name_lower_case);
-                missingValues++;
-            }
-            if (productNameString.equals("") || productNameString.isEmpty()) {
-                if (!whatIsMissing.equals("")) {
-                    whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.and_product_name);
-                    missingValues++;
-                } else {
-                    whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_name_lower_case);
-                }
-            }
-            if (productPriceInt == 0) {
-                if (!whatIsMissing.equals("")) {
-                    whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.and_product_price);
-                    missingValues++;
-                } else {
-                    whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_price_lower_case);
-                }
-            }
-            if (missingValues == 3) {
-                whatIsMissing = whatIsMissing.replaceFirst(" " + getResources().getString(R.string.and), ",");
-            }
-
-            /*
-            make final instance of ContentValues (because we want to use it in the inner class, but
-            but don't change its values there)
-            */
-            final ContentValues finalValues = values;
-
-            /*
-            if some information is missing, tell it to the user via Dialog, otherwise just insert
-            product to the table
-            */
+        String whatIsMissing = "";
+        int missingValues = 0;
+        if (productQuantity == 0) {
+            whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_name_missing_value);
+            missingValues++;
+        }
+        if (productNameString.equals("") || productNameString.isEmpty()) {
             if (!whatIsMissing.equals("")) {
-
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(getResources().getString(R.string.add_product_without_something_dialog_question) + whatIsMissing + "?");
-                builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                        // User clicked the "Yes" button, so add the product without those values.
-                        getContentResolver().insert(InventoryEntry.CONTENT_URI, finalValues);
-                        finish();
-                    }
-                });
-                builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                        /*
-                        User clicked the "Cancel" button, so dismiss the dialog
-                        and continue editing the product.
-                        */
-                        if (dialog != null) {
-                            dialog.dismiss();
-                        }
-                    }
-                });
-
-                // Create and show the AlertDialog
-                AlertDialog alertDialog = builder.create();
-                alertDialog.show();
+                whatIsMissing = whatIsMissing + ", " + getResources().getString(R.string.product_name_lower_case);
             } else {
+                whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_name_lower_case);
+            }
+            missingValues++;
+        }
+        if (productPriceInt == 0) {
+            if (!whatIsMissing.equals("")) {
+                whatIsMissing = whatIsMissing + ", " + getResources().getString(R.string.product_price_lower_case);
+            } else {
+                whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.product_price_lower_case);
+            }
+            missingValues++;
+        }
+        if (suplierPhoneNumberString.equals("") || suplierPhoneNumberString.isEmpty()) {
+            if (!whatIsMissing.equals("")) {
+                whatIsMissing = whatIsMissing + ", " + getResources().getString(R.string.supplier_phone_number_lower_case);
+            } else {
+                whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.supplier_phone_number_lower_case);
+            }
+            missingValues++;
+        }
+        if (suplierNameString.equals("") || suplierNameString.isEmpty()) {
+            if (!whatIsMissing.equals("")) {
+                whatIsMissing = whatIsMissing + ", " + getResources().getString(R.string.supplier_name_lower_case);
+            } else {
+                whatIsMissing = whatIsMissing + " " + getResources().getString(R.string.supplier_name_lower_case);
+            }
+            missingValues++;
+        }
+
+        /*
+        if there are more values, replace last occurrence of "," with "and" for more grammatically
+        correct sentence
+        */
+        if (missingValues != 1) {
+            int ind = whatIsMissing.lastIndexOf(",");
+            if (ind > 0) {
+                whatIsMissing = new StringBuilder(whatIsMissing).replace(ind, ind + 1, " " + getResources().getString(R.string.and)).toString();
+            }
+        }
+
+            /*
+            if some information is missing, tell it to the user via Toast, and don't let him put
+            unfinished product into table
+            */
+        if (!whatIsMissing.equals("")) {
+
+            Toast.makeText(this, getString(R.string.product_must_contain) + whatIsMissing + ".", Toast.LENGTH_LONG).show();
+
+        } else {
+            if (currentActivity == ADD_PRODUCT_ACTIVITY) {
+
+                // if all values are provided, insert product to the table
                 getContentResolver().insert(InventoryEntry.CONTENT_URI, values);
                 finish();
-            }
-
-            /*
-            if we are in EditDetails activity, either update the product, or say to the user that nothing
-            has changed
-            */
-        } else {
-
-            if (productWasChanged) {
-                getContentResolver().update(productUri, values, null, null);
-                Toast.makeText(this, getResources().getString(R.string.toast_message_details_updated), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, getResources().getString(R.string.toast_message_no_info_updated), Toast.LENGTH_SHORT).show();
+
+                /*
+                if we are in EditDetails activity, either update the product, or say to the user that nothing
+                has changed
+                */
+                if (productWasChanged) {
+                    getContentResolver().update(productUri, values, null, null);
+                    Toast.makeText(this, getResources().getString(R.string.toast_message_details_updated), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, getResources().getString(R.string.toast_message_no_info_updated), Toast.LENGTH_SHORT).show();
+                }
+                finish();
             }
-            finish();
         }
     }
 
@@ -529,7 +517,6 @@ public class AddProduct extends AppCompatActivity {
         }
 
         showDiscardChangesConfirmationDialog();
-
     }
 
     /*

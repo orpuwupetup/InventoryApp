@@ -27,10 +27,7 @@
     <string name="add_product_without_something_dialog_question">Do you want to add product without</string>
     <string name="and">and</string>
     <string name="product_price_lower_case">product price</string>
-    <string name="and_product_price">and product price</string>
     <string name="product_name_lower_case">product name</string>
-    <string name="and_product_name">and product name</string>
-    <string name="supplier_name_lower_case">supplier name</string>
     <string name="toast_message_all_items_deleted">All products deleted from the list</string>
     <string name="toast_message_cant_sell_more_nothings_left">Nothing left, can\'t sell more</string>
     <string name="toast_message_invalid_supplier_number">Invalid supplier phone number</string>
@@ -42,4 +39,8 @@
     <string name="no_supplier_number_info">No number...</string>
     <string name="no_supplier_name_info">No name...</string>
     <string name="no_description_info">No description...</string>
+    <string name="product_name_missing_value">product quantity</string>
+    <string name="product_must_contain">Product must contain</string>
+    <string name="supplier_phone_number_lower_case">supplier phone number</string>
+    <string name="supplier_name_lower_case">supplier name</string>
 </resources>
