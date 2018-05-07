@@ -33,10 +33,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private ProductCursorAdapter adapter;
     private ImageView emptyView;
 
-    // TODO: Make app pretty
-        // TODO: Add default picture of the product
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,8 +42,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         ListView productsList = findViewById(R.id.list);
         emptyView = findViewById(R.id.empty_list_view);
         productsList.setEmptyView(emptyView);
-
-
 
         //Find floating action button, and set intent on it to open AddProduct Activity
         FloatingActionButton fab = findViewById(R.id.fab);

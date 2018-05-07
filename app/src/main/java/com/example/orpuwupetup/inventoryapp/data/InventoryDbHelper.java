@@ -16,7 +16,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "shop.db";
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 1;
 
     /** class constructor calling one of constructors of the super class (SQLiteOpenHelper) */
     public InventoryDbHelper(Context context){
@@ -33,6 +33,8 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
                 + InventoryEntry.COLUMN_PRODUCT_PRICE + " INTEGER NOT NULL, "
                 + InventoryEntry.COLUMN_PRODUCT_QUANTITY + " INTEGER NOT NULL DEFAULT 0, "
                 + InventoryEntry.COLUMN_PRODUCT_SUPPLIER_NAME + " TEXT NOT NULL, "
+                + InventoryEntry.COLUMN_PRODUCT_DESCRIPTION + " TEXT NOT NULL DEFAULT 'No description...', "
+                + InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING + " TEXT, "
                 + InventoryEntry.COLUMN_PRODUCT_SUPPLIER_PHONE_NUMBER + " TEXT);"; // this one can be stored as TEXT because we don't need to use it as a value (for equations for example)
 
         // execute SQL statement
@@ -42,15 +44,5 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        /*
-        I needed to update my database and add 2 new columns to it, one for storing products descriptions
-        and one for image Uri Strings for product images (if any were chosen)
-        */
-        String MODIFY_TABEL_ADD_DESCRIPTION = "ALTER TABLE " + InventoryEntry.TABLE_NAME + " ADD COLUMN " + InventoryEntry.COLUMN_PRODUCT_DESCRIPTION + " TEXT NOT NULL DEFAULT 'No description...';";
-
-        String MODIFY_TABEL_ADD_IMAGE_URI_STRING = "ALTER TABLE " + InventoryEntry.TABLE_NAME + " ADD COLUMN " + InventoryEntry.COLUMN_PRODUCT_IMAGE_URI_STRING + " TEXT;";
-
-        db.execSQL(MODIFY_TABEL_ADD_DESCRIPTION);
-        db.execSQL(MODIFY_TABEL_ADD_IMAGE_URI_STRING);
     }
 }
