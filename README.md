@@ -22,13 +22,14 @@ which is sending the user to the AddNewProductActivity.
 
 ## AddProduct and EditProduct activities
 
+<img align="left" src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/add_product_toast_for_missing_values.png" height=200>
 <img align="left" src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/add_new_product.png" height=200> <img align="left" src="https://raw.githubusercontent.com/orpuwupetup/InventoryApp/master/Screenshots/edit_product_with_expanded_options.png" height=200>
 
 EditProductActivity and AddNewProductActivity are both build on single layout.xml file, becouse they are quite similar, both in look and in functionality.
 If user is in AddNewProduct activity (after clicking floating action button), all EditText views, are filled with default hints, specifying
 what to write down inside of each. If user is in EditProductActivity, EditText hints are filled with already provided pieces of information about the products.
 Layouts has floating action menu button which expands options from where to choose new (or update former) image, either from camera, or
-from the gallery. User is prompted to check his input (if he forgot to provide any piece of information) via dialog.
+from the gallery. User is prompted to check and supplement his input (if he forgot to provide any piece of information) via Toast message.
 </p>
 
 <p>
